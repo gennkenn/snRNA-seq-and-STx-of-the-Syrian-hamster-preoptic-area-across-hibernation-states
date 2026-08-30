@@ -1,0 +1,3900 @@
+---
+title: "20260710_ROIextraction"
+author: "Haruaki Sato"
+date: "2026-07-10"
+output: html_document
+---
+
+```{r }
+
+# Ctrl1
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Ctrl1.csv"
+
+fov_name <- "fov"
+
+animal_id <- "Ctrl1"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_EX,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_EX@meta.data)) {
+  merged.obj_EX$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_EX)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_EX@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_EX$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_EX@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+
+
+
+
+
+
+```
+
+```{r}
+###確認
+
+
+library(ggplot2)
+
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Ctrl1 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+
+
+```{r}
+# Ctrl2
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Ctrl2.csv"
+
+fov_name <- "fov"
+
+animal_id <- "Ctrl2"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_EX,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_EX@meta.data)) {
+  merged.obj_EX$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_EX)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_EX@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_EX$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_EX@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+
+```
+
+```{r}
+
+library(ggplot2)
+
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Ctrl2 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+```{r}
+# Ctrl3
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Ctrl3.csv"
+
+fov_name <- "fov.Ctrl2"
+
+animal_id <- "Ctrl3"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_EX,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_EX@meta.data)) {
+  merged.obj_EX$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_EX)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_EX@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_EX$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_EX@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+```
+
+```{r}
+
+library(ggplot2)
+
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Ctrl3 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+```{r}
+# Ctrl4
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Ctrl4.csv"
+
+fov_name <- "fov.Ctrl2"
+
+animal_id <- "Ctrl4"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_EX,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_EX@meta.data)) {
+  merged.obj_EX$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_EX)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_EX@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_EX$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_EX@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+```
+
+```{r}
+
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Ctrl4 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+
+```{r}
+# Cold1
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Winter1.csv"
+
+fov_name <- "fov.Winter1"
+
+animal_id <- "Winter1"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_EX,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_EX@meta.data)) {
+  merged.obj_EX$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_EX)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_EX@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_EX$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_EX@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+```
+
+
+```{r}
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Winter1 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+```{r}
+# Cold2
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Winter2.csv"
+
+fov_name <- "fov.Winter1"
+
+animal_id <- "Winter2"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_EX,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_EX@meta.data)) {
+  merged.obj_EX$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_EX)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_EX@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_EX$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_EX@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+```
+
+```{r}
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Winter2 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+```{r}
+# Cold1
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Winter3.csv"
+
+fov_name <- "fov.Winter2"
+
+animal_id <- "Winter3"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_EX,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_EX@meta.data)) {
+  merged.obj_EX$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_EX)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_EX@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_EX$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_EX@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+```
+
+```{r}
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Winter3 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+```{r}
+# Cold1
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Winter4.csv"
+
+fov_name <- "fov.Winter2"
+
+animal_id <- "Winter4"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_EX,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_EX@meta.data)) {
+  merged.obj_EX$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_EX)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_EX@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_EX$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_EX@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+```
+```{r}
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Winter4 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+
+
+### INHIBITORY NEURON
+
+```{r }
+
+# Ctrl1
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Ctrl1.csv"
+
+fov_name <- "fov"
+
+animal_id <- "Ctrl1"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_IN,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_IN@meta.data)) {
+  merged.obj_IN$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_IN)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_IN@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_EX$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_IN@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+
+
+
+
+
+
+```
+
+```{r}
+###確認
+
+
+library(ggplot2)
+
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Ctrl1 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+
+
+```{r}
+# Ctrl2
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Ctrl2.csv"
+
+fov_name <- "fov"
+
+animal_id <- "Ctrl2"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_IN,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_IN@meta.data)) {
+  merged.obj_IN$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_IN)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_IN@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_IN$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_IN@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+
+```
+
+```{r}
+
+library(ggplot2)
+
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Ctrl2 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+```{r}
+# Ctrl3
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Ctrl3.csv"
+
+fov_name <- "fov.Ctrl2"
+
+animal_id <- "Ctrl3"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_IN,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_IN@meta.data)) {
+  merged.obj_IN$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_IN)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_IN@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_IN$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_IN@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+```
+
+```{r}
+
+library(ggplot2)
+
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Ctrl3 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+```{r}
+# Ctrl4
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Ctrl4.csv"
+
+fov_name <- "fov.Ctrl2"
+
+animal_id <- "Ctrl4"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_IN,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_IN@meta.data)) {
+  merged.obj_IN$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_IN)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_IN@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_IN$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_IN@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+```
+
+```{r}
+
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Ctrl4 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+
+```{r}
+# Cold1
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Winter1.csv"
+
+fov_name <- "fov.Winter1"
+
+animal_id <- "Winter1"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_IN,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_IN@meta.data)) {
+  merged.obj_IN$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_IN)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_IN@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_IN$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_IN@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+```
+
+
+```{r}
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Winter1 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+```{r}
+# Cold1
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Winter2.csv"
+
+fov_name <- "fov.Winter1"
+
+animal_id <- "Winter2"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_IN,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_IN@meta.data)) {
+  merged.obj_IN$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_IN)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_IN@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_IN$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_IN@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+```
+
+```{r}
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Winter2 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+```{r}
+# Cold1
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Winter3.csv"
+
+fov_name <- "fov.Winter2"
+
+animal_id <- "Winter3"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_IN,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_IN@meta.data)) {
+  merged.obj_IN$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_IN)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_IN@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_IN$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_IN@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+```
+
+```{r}
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Winter3 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+```{r}
+# Cold1
+library(Seurat)
+library(sf)
+library(dplyr)
+
+############################################
+# 設定
+############################################
+
+csv_path <- "~/Xenium_hamster_analysis/ROI_geojson/Winter4.csv"
+
+fov_name <- "fov.Winter2"
+
+animal_id <- "Winter4"
+
+
+############################################
+# 1. ROI座標を読み込む
+############################################
+
+# CSV先頭2行はコメント行なので skip = 2
+roi_df <- read.csv(
+  csv_path,
+  skip = 2,
+  stringsAsFactors = FALSE
+)
+
+head(roi_df)
+
+# 必要な列が存在するか確認
+stopifnot(
+  all(c("X", "Y") %in% colnames(roi_df))
+)
+
+# 欠損座標を除外
+roi_df <- roi_df %>%
+  filter(
+    !is.na(X),
+    !is.na(Y)
+  )
+
+
+############################################
+# 2. ROIをsfポリゴンに変換
+############################################
+
+roi_coords <- as.matrix(
+  roi_df[, c("X", "Y")]
+)
+
+# 始点と終点が異なる場合は、最後に始点を追加して閉じる
+if (!all(roi_coords[1, ] == roi_coords[nrow(roi_coords), ])) {
+  roi_coords <- rbind(
+    roi_coords,
+    roi_coords[1, ]
+  )
+}
+
+roi_polygon <- st_polygon(
+  list(roi_coords)
+)
+
+roi_sf <- st_sf(
+  animal = animal_id,
+  geometry = st_sfc(roi_polygon),
+  crs = NA
+)
+
+
+############################################
+# 3. fov内の細胞座標を取得
+############################################
+
+cell_coords <- GetTissueCoordinates(
+  merged.obj_IN,
+  image = fov_name
+)
+
+head(cell_coords)
+colnames(cell_coords)
+
+# GetTissueCoordinates()の出力形式に対応
+# 通常は x, y, cell の3列
+if (!all(c("x", "y") %in% colnames(cell_coords))) {
+  stop(
+    "GetTissueCoordinates()の結果にx列またはy列がありません。colnames(cell_coords)を確認してください。"
+  )
+}
+
+# cell列がない場合はrownamesを細胞名として使用
+if (!"cell" %in% colnames(cell_coords)) {
+  cell_coords$cell <- rownames(cell_coords)
+}
+
+cell_coords <- cell_coords %>%
+  filter(
+    !is.na(x),
+    !is.na(y),
+    !is.na(cell)
+  )
+
+
+############################################
+# 4. 細胞座標をsf pointに変換
+############################################
+
+cell_sf <- st_as_sf(
+  cell_coords,
+  coords = c("x", "y"),
+  crs = NA,
+  remove = FALSE
+)
+
+
+############################################
+# 5. ROI内に入る細胞を判定
+############################################
+
+inside_roi <- lengths(
+  st_within(
+    cell_sf,
+    roi_sf
+  )
+) > 0
+
+roi_cells <- cell_sf$cell[inside_roi]
+
+length(roi_cells)
+
+head(roi_cells)
+
+
+############################################
+# 6. metadataのanimal列にCtrl1を入力
+############################################
+
+# animal列が存在しない場合はNAで作成
+if (!"animal" %in% colnames(merged.obj_IN@meta.data)) {
+  merged.obj_IN$animal <- NA_character_
+}
+
+# ROI内細胞のうち、Seurat object内に存在する細胞だけを抽出
+roi_cells_use <- intersect(
+  roi_cells,
+  colnames(merged.obj_IN)
+)
+
+# ROI内細胞にanimal IDを入力
+merged.obj_IN@meta.data[
+  roi_cells_use,
+  "animal"
+] <- animal_id
+
+
+############################################
+# 7. 結果確認
+############################################
+
+cat(
+  "fov内の全細胞数:",
+  nrow(cell_coords),
+  "\n"
+)
+
+cat(
+  "ROI内と判定された細胞数:",
+  length(roi_cells),
+  "\n"
+)
+
+cat(
+  "metadataにanimal IDを入力した細胞数:",
+  length(roi_cells_use),
+  "\n"
+)
+
+table(
+  merged.obj_IN$animal,
+  useNA = "ifany"
+)
+
+
+############################################
+# 8. ROI内細胞のみ確認
+############################################
+
+head(
+  merged.obj_IN@meta.data[
+    roi_cells_use,
+    ,
+    drop = FALSE
+  ]
+)
+```
+```{r}
+ggplot() +
+  geom_point(
+    data = cell_coords,
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.1,
+    color = "grey70"
+  ) +
+  geom_point(
+    data = cell_coords %>%
+      filter(cell %in% roi_cells_use),
+    aes(
+      x = x,
+      y = y
+    ),
+    size = 0.2,
+    color = "red"
+  ) +
+  geom_path(
+    data = roi_df,
+    aes(
+      x = X,
+      y = Y
+    ),
+    linewidth = 0.7,
+    color = "blue"
+  ) +
+  coord_fixed() +
+  theme_classic() +
+  labs(
+    title = "Winter4 ROI",
+    subtitle = paste0(
+      "ROI cells: ",
+      length(roi_cells_use)
+    ),
+    x = "X",
+    y = "Y"
+  )
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
