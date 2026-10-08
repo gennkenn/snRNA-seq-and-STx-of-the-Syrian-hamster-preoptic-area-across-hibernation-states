@@ -38,7 +38,7 @@ winter_M2<- CreateSeuratObject(counts = winter_M2.data, project = "winterM2", mi
 winter_M2
 winter_F1<- CreateSeuratObject(counts = winter_F1.data, project = "winterF1", min.cells = 3, min.features = 250)
 winter_F1
-summer_F1<- CreateSeuratObject(counts = winter_F1.data, project = "summerF1", min.cells = 3, min.features = 250)
+summer_F1<- CreateSeuratObject(counts = summer_F1.data, project = "summerF1", min.cells = 3, min.features = 250)
 summer_F1
 
 
@@ -117,9 +117,7 @@ summer_F1$Sex <- 'F'
 sumwinHam_merged <- merge(summer_M1, y = c(winter_M1,winter_M2,winter_F1,summer_F1), add.cell.ids = c("sM1","wM2","wM1","wF1","sF1"))
 
 # SCTransform以下、いつもの処理
-sumwinHam_merged <- NormalizeData(sumwinHam_merged)
-sumwinHam_merged <- FindVariableFeatures(sumwinHam_merged)
-sumwinHam_merged <- ScaleData(sumwinHam_merged)
+sumwinHam_merged <- SCTransform(sumwinHam_merged, vars.to.regress = c("percent.mt","percent.rp"))
 sumwinHam_merged <- RunPCA(sumwinHam_merged,npcs=150)
 ElbowPlot(sumwinHam_merged, ndims = 150)
 sumwinHam_merged <- IntegrateLayers(object = sumwinHam_merged, method = CCAIntegration, normalization.method = "LogNormalize",
