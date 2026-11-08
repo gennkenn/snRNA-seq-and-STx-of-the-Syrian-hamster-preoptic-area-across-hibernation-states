@@ -139,16 +139,6 @@ make_fig <- function(row_ord, col_ord, subtitle) {
 }
 
 # ---------------------------------------------------------------------------
-# Seriation by greedy maximum matching.
-#
-# Repeatedly takes the largest remaining entry of the matrix and assigns its
-# row and column to the next diagonal slot, removing both from further
-# consideration. The strongest correspondence of each cluster therefore lands
-# exactly on the diagonal, which a weighted-mean ordering cannot guarantee
-# when many clusters are unresolved. Rows/columns left over once one axis is
-# exhausted are inserted next to whichever partner they match best.
-# ---------------------------------------------------------------------------
-# ---------------------------------------------------------------------------
 # Column order for a FIXED row order.
 #
 # Walks the rows in the given (native, numeric) order and places each row's
@@ -170,37 +160,6 @@ cols_for_fixed_rows <- function(M, row_order) {
     rest <- rest[order(match(br, row_order))]
   }
   c(placed, rest)
-}
-
-diagonal_order <- function(M) {
-  rem_r <- rownames(M); rem_c <- colnames(M)
-  pair_r <- character(0); pair_c <- character(0)
-  while (length(rem_r) && length(rem_c)) {
-    sub <- M[rem_r, rem_c, drop = FALSE]
-    if (max(sub) <= 0) break
-    ij <- which.max(sub)
-    i <- ((ij - 1) %% nrow(sub)) + 1
-    j <- ((ij - 1) %/% nrow(sub)) + 1
-    pair_r <- c(pair_r, rem_r[i]); pair_c <- c(pair_c, rem_c[j])
-    rem_r <- rem_r[-i]; rem_c <- rem_c[-j]
-  }
-  rkey <- stats::setNames(rep(NA_real_, nrow(M)), rownames(M))
-  ckey <- stats::setNames(rep(NA_real_, ncol(M)), colnames(M))
-  rkey[pair_r] <- seq_along(pair_r)
-  ckey[pair_c] <- seq_along(pair_c)
-  lo_r <- names(rkey)[is.na(rkey)]
-  if (length(lo_r)) {
-    bc <- colnames(M)[apply(M[lo_r, , drop = FALSE], 1, which.max)]
-    k  <- ckey[bc]; k[is.na(k)] <- length(pair_r) + 1
-    rkey[lo_r] <- k + 0.5
-  }
-  lo_c <- names(ckey)[is.na(ckey)]
-  if (length(lo_c)) {
-    br <- rownames(M)[apply(M[, lo_c, drop = FALSE], 2, which.max)]
-    k  <- rkey[br]; k[is.na(k)] <- length(pair_c) + 1
-    ckey[lo_c] <- k + 0.5
-  }
-  list(rows = names(sort(rkey)), cols = names(sort(ckey)))
 }
 
 save_fig <- function(p, stem) {
@@ -226,21 +185,6 @@ col_native <- colnames(M_fwd)
 # weighted mean row index of its own mass, so the best matches run top-left to
 # bottom-right while the y axis keeps the manuscript's cluster numbering.
 # Columns carrying no mass at all are parked at the right-hand edge.
-w_mean <- apply(M_fwd, 2, function(x) {
-  s <- sum(x); if (s <= 0) return(Inf)
-  sum(x * seq_len(nrow(M_fwd))) / s
-})
-col_sorted <- names(sort(w_mean))
-
-dg <- diagonal_order(M_fwd)
-save_fig(make_fig(dg$rows, dg$cols,
-  "rows and columns seriated by greedy maximum matching (strongest match on the diagonal)"),
-  "fig_correspondence")
-
-save_fig(make_fig(row_native, col_native,
-  "rows and columns in native cluster / subtype numbering"),
-  "fig_correspondence_byClusterNumber")
-
 save_fig(make_fig(row_native, cols_for_fixed_rows(M_fwd, row_native),
   "rows in native cross-condition cluster order; columns sorted to the diagonal"),
   "fig_correspondence_rowNumberColSorted")
