@@ -45,20 +45,17 @@
 #   percell_predictions_query_<CLASS>.csv         per-cell predicted label + score
 #   percell_predictions_reference_<CLASS>.csv     per-cell predicted cluster + score
 #   reference_label_representation_<CLASS>.csv    hamster cell count per ref label
-#   sourcedata_fig_correspondence_<CLASS>.csv     every value plotted, long form
-#   fig_correspondence_<CLASS>.png / .pdf         main figure (seriated order)
-#   fig_correspondence_byClusterNumber_<CLASS>.png / .pdf
-#                                                 same data, native numbering
+#
+# The figure and its source-data file are produced separately by
+# replot_correspondence_from_csv.R, which reads the CSVs above.
 #
 # Seurat 5.5.1 / SeuratObject 5.4.0
 # =============================================================================
 
 suppressPackageStartupMessages({
   library(Seurat)
-  library(ggplot2)
   library(dplyr)
   library(tidyr)
-  library(patchwork)
 })
 
 set.seed(1234)
@@ -295,8 +292,8 @@ M_fwd <- frac_matrix(factor(qry$.label, levels = q_levels),
 M_rev <- frac_matrix(factor(ref_ham$.label, levels = lab_used),
                      ref_ham$pred_cluster, q_levels)           # label x cluster
 
-write.csv(round(M_fwd, 4), out("correspondence_matrix_forward", "csv"))
-write.csv(round(M_rev, 4), out("correspondence_matrix_reverse", "csv"))
+write.csv(round(M_fwd, 6), out("correspondence_matrix_forward", "csv"))
+write.csv(round(M_rev, 6), out("correspondence_matrix_reverse", "csv"))
 
 best_fwd <- colnames(M_fwd)[apply(M_fwd, 1, which.max)]   # per query cluster
 names(best_fwd) <- rownames(M_fwd)
@@ -351,154 +348,11 @@ cat("---- e-labels never used as a best match:",
     paste(setdiff(lab_used, summ$best_label), collapse = ", "), "----\n\n")
 
 # ----------------------------------------------------------------------------
-# 7. Figure + source data
+# 7. Figure
 #
-# Two orderings of the same matrix are written:
-#   (a) "seriated"  -- rows and columns reordered so that a correspondence
-#                      structure, if present, appears as a diagonal;
-#   (b) "byClusterNumber" -- rows and columns in their native cluster /
-#                      subtype numbering, for cross-referencing with the
-#                      manuscript figures and tables.
+# The published panel (Fig. 5i, excitatory; Fig. 6f, inhibitory) is drawn by
+# replot_correspondence_from_csv.R from the CSVs written above, so that
+# changes to the figure never require re-running the label transfer.
 # ----------------------------------------------------------------------------
-message("== plotting ==")
-
-df0 <- as.data.frame(as.table(M_fwd))
-colnames(df0) <- c("query_cluster", "ref_label", "frac")
-df0$query_cluster <- as.character(df0$query_cluster)
-df0$ref_label     <- as.character(df0$ref_label)
-
-fwd_hit <- paste(rownames(M_fwd), best_fwd)
-rev_hit <- paste(best_rev, rownames(M_rev))
-key <- paste(df0$query_cluster, df0$ref_label)
-df0$mark <- dplyr::case_when(
-  key %in% fwd_hit & key %in% rev_hit ~ "reciprocal best hit",
-  key %in% fwd_hit                    ~ "forward best only",
-  key %in% rev_hit                    ~ "reverse best only",
-  TRUE                                ~ NA_character_
-)
-
-bar_df <- data.frame(
-  query_cluster = rownames(M_fwd),
-  n_cells       = as.integer(table(factor(qry$.label, levels = rownames(M_fwd)))),
-  med_score     = as.numeric(med_score[rownames(M_fwd)]),
-  frac_best     = apply(M_fwd, 1, max),
-  stringsAsFactors = FALSE
-)
-
-# --- source data: every value that appears in the figure, in long form -------
-sd_tiles <- data.frame(
-  panel = "A (heatmap)", query_cluster = df0$query_cluster,
-  ref_label = df0$ref_label, value_type = "fraction_of_query_cluster",
-  value = df0$frac, mark = df0$mark, stringsAsFactors = FALSE)
-sd_bars <- rbind(
-  data.frame(panel = "B (bar)", query_cluster = bar_df$query_cluster,
-             ref_label = NA_character_, value_type = "median_prediction_score",
-             value = bar_df$med_score, mark = NA_character_),
-  data.frame(panel = "C (bar)", query_cluster = bar_df$query_cluster,
-             ref_label = NA_character_,
-             value_type = "fraction_in_best_matching_label",
-             value = bar_df$frac_best, mark = NA_character_),
-  data.frame(panel = "n", query_cluster = bar_df$query_cluster,
-             ref_label = NA_character_, value_type = "n_cells_in_query_cluster",
-             value = as.numeric(bar_df$n_cells), mark = NA_character_))
-sourcedata <- rbind(sd_tiles, sd_bars)
-write.csv(sourcedata, out("sourcedata_fig_correspondence", "csv"),
-          row.names = FALSE)
-
-# --- plotting ----------------------------------------------------------------
-base_theme <- theme_bw(base_size = 11) +
-  theme(panel.grid = element_blank(),
-        axis.ticks = element_line(linewidth = 0.3),
-        legend.key.height = unit(0.9, "lines"),
-        legend.background = element_blank(),
-        plot.title = element_text(size = 12, face = "plain"),
-        plot.subtitle = element_text(size = 9, colour = "grey30"))
-
-make_fig <- function(row_ord, col_ord, subtitle) {
-  d <- df0
-  d$query_cluster <- factor(d$query_cluster, levels = rev(row_ord))
-  d$ref_label     <- factor(d$ref_label, levels = col_ord)
-  b <- bar_df
-  b$query_cluster <- factor(b$query_cluster, levels = rev(row_ord))
-
-  pA <- ggplot(d, aes(ref_label, query_cluster, fill = frac)) +
-    geom_tile(colour = "grey92", linewidth = 0.12) +
-    geom_point(data = subset(d, !is.na(mark)),
-               aes(shape = mark, colour = mark), size = 1.7, stroke = 0.7) +
-    scale_fill_gradientn(
-      colours = c("white", "#d9e7f5", "#6baed6", "#2171b5", "#08306b"),
-      limits = c(0, 1), name = "fraction of\nquery cluster") +
-    scale_shape_manual(values = c("reciprocal best hit" = 21,
-                                  "forward best only"   = 4,
-                                  "reverse best only"   = 3), name = NULL) +
-    scale_colour_manual(values = c("reciprocal best hit" = "#d62728",
-                                   "forward best only"   = "#d62728",
-                                   "reverse best only"   = "grey25"), name = NULL) +
-    labs(x = "cross-species atlas subtype (celltype_display, Figs. 1-3)",
-         y = "cross-condition cluster (Figs. 4-6)",
-         title = sprintf("Label transfer, %s neurons", CLASS_LONG),
-         subtitle = subtitle) +
-    base_theme +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 7),
-          axis.text.y = element_text(size = 7))
-
-  pB <- ggplot(b, aes(med_score, query_cluster)) +
-    geom_col(fill = "grey70", width = 0.75) +
-    geom_vline(xintercept = TH_SCORE_MIN, linetype = "dashed",
-               colour = "#d62728", linewidth = 0.4) +
-    scale_x_continuous(limits = c(0, 1), breaks = c(0, 0.5, 1)) +
-    labs(x = "median\nprediction score", y = NULL) +
-    base_theme + theme(axis.text.y = element_blank(),
-                       axis.ticks.y = element_blank())
-
-  pC <- ggplot(b, aes(frac_best, query_cluster)) +
-    geom_col(fill = "grey70", width = 0.75) +
-    geom_vline(xintercept = TH_FRAC_PRIMARY, linetype = "dashed",
-               colour = "#d62728", linewidth = 0.4) +
-    scale_x_continuous(limits = c(0, 1), breaks = c(0, 0.5, 1)) +
-    labs(x = "fraction in\nbest-matching label", y = NULL) +
-    base_theme + theme(axis.text.y = element_blank(),
-                       axis.ticks.y = element_blank())
-
-  pA + pB + pC + plot_layout(widths = c(6, 1, 1), guides = "collect")
-}
-
-# Figure size scales with the number of clusters/subtypes so that the axis
-# labels stay legible for both neuronal classes.
-fig_h <- max(6, 0.17 * nrow(M_fwd) + 2.2)
-fig_w <- max(8, 0.17 * ncol(M_fwd) + 5.0)
-
-# (a) seriated
-col_order <- colnames(M_fwd)[order(apply(M_fwd, 2, function(x)
-  sum(x * seq_len(nrow(M_fwd))) / max(sum(x), 1e-9)))]
-row_order <- rownames(M_fwd)[order(match(best_fwd, col_order),
-                                   -apply(M_fwd, 1, max))]
-fig_a <- make_fig(row_order, col_order,
-                  "rows and columns reordered to expose the correspondence structure")
-ggsave(out("fig_correspondence", "png"), fig_a,
-       width = fig_w, height = fig_h, dpi = 300, bg = "white", limitsize = FALSE)
-ggsave(out("fig_correspondence", "pdf"), fig_a,
-       width = fig_w, height = fig_h, bg = "white", limitsize = FALSE)
-
-# (b) native cluster / subtype numbering
-row_num <- intersect(q_levels, rownames(M_fwd))
-col_num <- intersect(e_levels, colnames(M_fwd))
-fig_b <- make_fig(row_num, col_num,
-                  "rows and columns in native cluster / subtype numbering")
-ggsave(file.path(OUTDIR, sprintf("fig_correspondence_byClusterNumber_%s.png", CLASS)),
-       fig_b, width = fig_w, height = fig_h, dpi = 300, bg = "white", limitsize = FALSE)
-ggsave(file.path(OUTDIR, sprintf("fig_correspondence_byClusterNumber_%s.pdf", CLASS)),
-       fig_b, width = fig_w, height = fig_h, bg = "white", limitsize = FALSE)
-
-# (c) rows in native cross-condition cluster order, columns sorted to the
-#     diagonal. `col_order` is already the weighted-mean ordering computed
-#     against the native row order, so reusing it here puts the best matches
-#     on a diagonal while the y axis keeps the manuscript's numbering.
-fig_c <- make_fig(row_num, col_order,
-                  "rows in native cross-condition cluster order; columns sorted to the diagonal")
-ggsave(file.path(OUTDIR, sprintf("fig_correspondence_rowNumberColSorted_%s.png", CLASS)),
-       fig_c, width = fig_w, height = fig_h, dpi = 300, bg = "white", limitsize = FALSE)
-ggsave(file.path(OUTDIR, sprintf("fig_correspondence_rowNumberColSorted_%s.pdf", CLASS)),
-       fig_c, width = fig_w, height = fig_h, bg = "white", limitsize = FALSE)
-
-message("done -> ", normalizePath(OUTDIR))
+message("tables written -> ", normalizePath(OUTDIR),
+        "  (draw the figure with replot_correspondence_from_csv.R)")
