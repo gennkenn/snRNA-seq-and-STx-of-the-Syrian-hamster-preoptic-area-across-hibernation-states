@@ -201,21 +201,27 @@ YLAB_PT    <- as.numeric(Sys.getenv("YLAB_PT", "4"))   # y-axis cluster numbers
 # text, not on the figure size, so they were measured once from a rendered
 # panel by calibrate_panel_size.py and fixed here; with them the tile pitch
 # comes out at TILE_MM for every figure.
-.cal <- list(EX = c(31.9, 11.6), IN = c(32.9, 11.4))[[CLASS]]
+.cal <- list(EX = c(37.4, 11.4), IN = c(38.4, 11.1))[[CLASS]]
 MARGIN_W_MM <- as.numeric(Sys.getenv("MARGIN_W_MM", .cal[1]))
 MARGIN_H_MM <- as.numeric(Sys.getenv("MARGIN_H_MM", .cal[2]))
 BAR_FRAC    <- as.numeric(Sys.getenv("BAR_FRAC", "0.22"))  # bar height / heatmap
 
+# All text, tick marks and panel borders are pure black (theme_bw defaults to
+# dark greys); tick marks are 0.3 mm long at the final printed size.
 base_theme <- theme_bw(base_size = BASE_PT) +
   theme(panel.grid = element_blank(),
-        axis.ticks = element_line(linewidth = 0.15),
-        axis.ticks.length = unit(0.6, "mm"),
+        text = element_text(colour = "black"),
+        axis.text = element_text(colour = "black"),
+        axis.title = element_text(colour = "black"),
+        axis.ticks = element_line(colour = "black", linewidth = 0.15),
+        axis.ticks.length = unit(0.3, "mm"),
+        axis.line = element_blank(),
         legend.background = element_blank(),
         legend.key.height = unit(3.2, "mm"),
         legend.key.width  = unit(3.2, "mm"),
         legend.spacing.y  = unit(1, "mm"),
-        legend.text  = element_text(size = BASE_PT),
-        legend.title = element_text(size = BASE_PT),
+        legend.text  = element_text(size = BASE_PT, colour = "black"),
+        legend.title = element_text(size = BASE_PT, colour = "black"),
         legend.margin = margin(0, 0, 0, 1, "mm"),
         plot.margin = margin(1, 1, 1, 1, "mm"))
 
