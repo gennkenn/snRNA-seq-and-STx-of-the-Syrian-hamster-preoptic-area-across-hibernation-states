@@ -1,0 +1,206 @@
+neuron_class,comparison,query_dataset,query_cluster,reference_dataset,best_label,frac_best,second_label,frac_second,n_partners_ge20pct,partners_ge20pct,confidence_metric,confidence_value,reciprocal,many_to_one,relation
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),0,cross-species (Figs. 1-3),e1,0.913118,e16,0.052811,1,e1,median_prediction_score,0.977291,True,False,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),1,cross-species (Figs. 1-3),e6,0.612284,e20,0.24952,2,e6;e20,median_prediction_score,0.941523,True,True,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),2,cross-species (Figs. 1-3),e15,0.518,e19,0.438,2,e15;e19,median_prediction_score,0.881043,True,False,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),3,cross-species (Figs. 1-3),e4,0.869848,e29,0.073753,1,e4,median_prediction_score,0.970118,True,True,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),4,cross-species (Figs. 1-3),e9,0.972912,e4,0.006772,1,e9,median_prediction_score,1.0,True,False,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),5,cross-species (Figs. 1-3),e18,0.493827,e25,0.404938,2,e18;e25,median_prediction_score,0.645259,True,False,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),6,cross-species (Figs. 1-3),e10,0.769424,e9,0.095238,1,e10,median_prediction_score,0.944489,True,False,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),7,cross-species (Figs. 1-3),e7,0.678571,e1,0.255952,2,e7;e1,median_prediction_score,0.977284,False,True,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),8,cross-species (Figs. 1-3),e14,0.567901,e27,0.425926,2,e14;e27,median_prediction_score,0.919256,True,True,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),9,cross-species (Figs. 1-3),e6,0.983923,e17,0.006431,1,e6,median_prediction_score,0.898513,False,True,many:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),10,cross-species (Figs. 1-3),e26,0.428571,e13,0.315615,2,e26;e13,median_prediction_score,0.745348,True,False,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),11,cross-species (Figs. 1-3),e4,0.417508,e34,0.410774,2,e4;e34,median_prediction_score,0.768022,False,True,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),12,cross-species (Figs. 1-3),e2,0.737643,e8,0.209125,2,e2;e8,median_prediction_score,0.861487,True,True,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),13,cross-species (Figs. 1-3),e6,0.217899,e20,0.210117,3,e6;e20;e28,median_prediction_score,0.423744,False,True,unresolved
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),14,cross-species (Figs. 1-3),e4,0.556,e29,0.104,1,e4,median_prediction_score,0.612273,False,True,many:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),15,cross-species (Figs. 1-3),e12,0.569106,e7,0.134146,1,e12,median_prediction_score,0.81771,True,False,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),16,cross-species (Figs. 1-3),e8,0.946939,e2,0.040816,1,e8,median_prediction_score,0.958634,False,True,many:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),17,cross-species (Figs. 1-3),e17,0.695652,e19,0.134783,1,e17,median_prediction_score,0.88184,True,True,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),18,cross-species (Figs. 1-3),e7,0.657895,e5,0.236842,2,e7;e5,median_prediction_score,0.707203,True,True,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),19,cross-species (Figs. 1-3),e23,0.705357,e28,0.09375,1,e23,median_prediction_score,0.866645,True,False,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),20,cross-species (Figs. 1-3),e5,0.863636,e16,0.063636,1,e5,median_prediction_score,0.936363,True,False,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),21,cross-species (Figs. 1-3),e2,0.907834,e36,0.078341,1,e2,median_prediction_score,0.88247,False,True,many:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),22,cross-species (Figs. 1-3),e13,0.548387,e31,0.423963,2,e13;e31,median_prediction_score,0.8362,True,False,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),23,cross-species (Figs. 1-3),e6,0.514019,e17,0.308411,2,e6;e17,median_prediction_score,0.485067,False,True,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),24,cross-species (Figs. 1-3),e35,0.890995,e29,0.075829,1,e35,median_prediction_score,1.0,True,False,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),25,cross-species (Figs. 1-3),e28,0.308824,e20,0.264706,2,e28;e20,median_prediction_score,0.432408,False,True,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),26,cross-species (Figs. 1-3),e14,0.522167,e23,0.394089,2,e14;e23,median_prediction_score,0.754112,False,True,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),27,cross-species (Figs. 1-3),e2,0.890547,e4,0.044776,1,e2,median_prediction_score,0.934426,False,True,many:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),28,cross-species (Figs. 1-3),e32,0.392857,e11,0.352041,3,e32;e11;e24,median_prediction_score,0.601355,True,False,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),29,cross-species (Figs. 1-3),e28,0.716495,e5,0.128866,1,e28,median_prediction_score,0.569118,True,True,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),30,cross-species (Figs. 1-3),e8,0.984536,e28,0.010309,1,e8,median_prediction_score,0.969932,True,True,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),31,cross-species (Figs. 1-3),e6,0.433155,e17,0.368984,2,e6;e17,median_prediction_score,0.532053,False,True,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),32,cross-species (Figs. 1-3),e16,0.494118,e1,0.276471,2,e16;e1,median_prediction_score,0.744325,False,False,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),33,cross-species (Figs. 1-3),e29,0.737805,e4,0.152439,1,e29,median_prediction_score,0.571428,True,True,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),34,cross-species (Figs. 1-3),e17,0.462069,e15,0.413793,2,e17;e15,median_prediction_score,0.503842,False,True,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),35,cross-species (Figs. 1-3),e42,0.587413,e18,0.13986,1,e42,median_prediction_score,0.544634,False,True,many:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),36,cross-species (Figs. 1-3),e40,0.979021,e1,0.006993,1,e40,median_prediction_score,1.0,True,True,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),37,cross-species (Figs. 1-3),e6,0.704,e16,0.072,1,e6,median_prediction_score,0.499628,False,True,many:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),38,cross-species (Figs. 1-3),e8,0.443548,e28,0.274194,2,e8;e28,median_prediction_score,0.417539,False,True,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),39,cross-species (Figs. 1-3),e11,0.92437,e6,0.05042,1,e11,median_prediction_score,0.971468,True,False,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),40,cross-species (Figs. 1-3),e40,0.739496,e3,0.109244,1,e40,median_prediction_score,0.653098,False,True,many:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),41,cross-species (Figs. 1-3),e41,0.814159,e4,0.132743,1,e41,median_prediction_score,0.878697,True,False,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),42,cross-species (Figs. 1-3),e3,1.0,e1,0.0,1,e3,median_prediction_score,1.0,True,True,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),43,cross-species (Figs. 1-3),e36,0.714286,e8,0.257143,2,e36;e8,median_prediction_score,0.726286,True,False,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),44,cross-species (Figs. 1-3),e38,0.92,e27,0.05,1,e38,median_prediction_score,0.955564,True,False,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),45,cross-species (Figs. 1-3),e4,0.978723,e29,0.010638,1,e4,median_prediction_score,0.961024,False,True,many:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),46,cross-species (Figs. 1-3),e3,0.906977,e6,0.023256,1,e3,median_prediction_score,1.0,False,True,many:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),47,cross-species (Figs. 1-3),e25,0.5375,e28,0.3125,2,e25;e28,median_prediction_score,0.502881,False,False,1:many
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),48,cross-species (Figs. 1-3),e29,0.676056,e5,0.169014,1,e29,median_prediction_score,0.712808,False,True,many:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),49,cross-species (Figs. 1-3),e42,0.851852,e28,0.055556,1,e42,median_prediction_score,0.760248,True,True,1:1
+excitatory,cross-condition vs cross-species,cross-condition (Figs. 4-6),50,cross-species (Figs. 1-3),e28,0.363636,e5,0.227273,2,e28;e5,median_prediction_score,0.34939,False,True,unresolved
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),0,cross-species (Figs. 1-3),i4,0.760891,i45,0.092933,1,i4,median_prediction_score,0.953252,True,False,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),1,cross-species (Figs. 1-3),i13,0.72338,i15,0.115741,1,i13,median_prediction_score,0.884774,True,False,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),2,cross-species (Figs. 1-3),i17,0.656131,i31,0.240202,2,i17;i31,median_prediction_score,0.802996,True,False,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),3,cross-species (Figs. 1-3),i15,0.446589,i14,0.099099,1,i15,median_prediction_score,0.57899,False,False,1:1 (weak)
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),4,cross-species (Figs. 1-3),i36,0.497423,i34,0.372423,2,i36;i34,median_prediction_score,0.703198,True,True,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),5,cross-species (Figs. 1-3),i3,0.711382,i26,0.253388,2,i3;i26,median_prediction_score,0.974793,False,True,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),6,cross-species (Figs. 1-3),i9,0.582386,i5,0.338068,2,i9;i5,median_prediction_score,0.876642,True,True,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),7,cross-species (Figs. 1-3),i1,0.853485,i27,0.072546,1,i1,median_prediction_score,0.873961,False,True,many:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),8,cross-species (Figs. 1-3),i8,0.851429,i23,0.074286,1,i8,median_prediction_score,0.932501,True,True,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),9,cross-species (Figs. 1-3),i30,0.545977,i2,0.288793,2,i30;i2,median_prediction_score,0.694783,True,False,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),10,cross-species (Figs. 1-3),i3,0.950365,i2,0.016058,1,i3,median_prediction_score,0.995648,True,True,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),11,cross-species (Figs. 1-3),i19,0.87585,i20,0.044218,1,i19,median_prediction_score,0.862729,True,True,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),12,cross-species (Figs. 1-3),i19,0.974359,i30,0.012821,1,i19,median_prediction_score,1.0,False,True,many:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),13,cross-species (Figs. 1-3),i2,0.92963,i29,0.022222,1,i2,median_prediction_score,0.946156,True,True,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),14,cross-species (Figs. 1-3),i5,0.533835,i9,0.263158,2,i5;i9,median_prediction_score,0.555962,False,True,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),15,cross-species (Figs. 1-3),i27,0.854991,i1,0.073446,1,i27,median_prediction_score,0.970416,True,False,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),16,cross-species (Figs. 1-3),i31,0.398482,i30,0.235294,2,i31;i30,median_prediction_score,0.556039,False,False,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),17,cross-species (Figs. 1-3),i25,0.59144,i2,0.167315,1,i25,median_prediction_score,0.774724,True,True,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),18,cross-species (Figs. 1-3),i10,0.974708,i7,0.015564,1,i10,median_prediction_score,0.919608,True,True,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),19,cross-species (Figs. 1-3),i14,0.980237,i2,0.009881,1,i14,median_prediction_score,1.0,True,False,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),20,cross-species (Figs. 1-3),i35,0.549801,i30,0.143426,1,i35,median_prediction_score,0.656806,True,False,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),21,cross-species (Figs. 1-3),i7,0.55144,i10,0.314815,2,i7;i10,median_prediction_score,0.498738,True,False,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),22,cross-species (Figs. 1-3),i20,0.795207,i31,0.076253,1,i20,median_prediction_score,0.689183,True,True,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),23,cross-species (Figs. 1-3),i32,0.751663,i23,0.115299,1,i32,median_prediction_score,0.624894,False,False,1:1 (weak)
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),24,cross-species (Figs. 1-3),i33,0.970917,i3,0.011186,1,i33,median_prediction_score,1.0,True,False,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),25,cross-species (Figs. 1-3),i6,0.641723,i38,0.326531,2,i6;i38,median_prediction_score,0.767682,True,True,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),26,cross-species (Figs. 1-3),i24,0.880841,i29,0.042056,1,i24,median_prediction_score,0.900323,True,False,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),27,cross-species (Figs. 1-3),i29,0.884521,i2,0.058968,1,i29,median_prediction_score,0.803225,True,False,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),28,cross-species (Figs. 1-3),i37,0.670984,i32,0.233161,2,i37;i32,median_prediction_score,0.678683,True,False,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),29,cross-species (Figs. 1-3),i23,0.715405,i8,0.232376,2,i23;i8,median_prediction_score,0.7343,True,False,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),30,cross-species (Figs. 1-3),i10,0.64042,i7,0.220472,2,i10;i7,median_prediction_score,0.564503,False,True,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),31,cross-species (Figs. 1-3),i12,0.521858,i5,0.418033,2,i12;i5,median_prediction_score,0.548177,True,False,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),32,cross-species (Figs. 1-3),i42,0.889213,i35,0.043732,1,i42,median_prediction_score,0.845083,True,False,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),33,cross-species (Figs. 1-3),i2,0.832298,i12,0.049689,1,i2,median_prediction_score,0.727328,False,True,many:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),34,cross-species (Figs. 1-3),i8,0.968847,i25,0.015576,1,i8,median_prediction_score,1.0,False,True,many:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),35,cross-species (Figs. 1-3),i26,0.876221,i10,0.058632,1,i26,median_prediction_score,0.770228,False,True,many:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),36,cross-species (Figs. 1-3),i1,0.96831,i8,0.017606,1,i1,median_prediction_score,0.998459,True,True,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),37,cross-species (Figs. 1-3),i20,0.853846,i5,0.053846,1,i20,median_prediction_score,0.761144,False,True,many:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),38,cross-species (Figs. 1-3),i6,0.5,i36,0.096639,1,i6,median_prediction_score,0.45978,False,True,many:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),39,cross-species (Figs. 1-3),i2,0.822511,i30,0.060606,1,i2,median_prediction_score,0.781245,False,True,many:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),40,cross-species (Figs. 1-3),i5,0.871681,i30,0.106195,1,i5,median_prediction_score,0.982976,True,True,1:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),41,cross-species (Figs. 1-3),i5,0.55814,i9,0.148837,1,i5,median_prediction_score,0.645262,False,True,many:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),42,cross-species (Figs. 1-3),i19,0.325472,i28,0.268868,2,i19;i28,median_prediction_score,0.496616,False,True,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),43,cross-species (Figs. 1-3),i25,0.646465,i29,0.257576,2,i25;i29,median_prediction_score,0.880483,False,True,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),44,cross-species (Figs. 1-3),i19,0.27027,i28,0.216216,2,i19;i28,median_prediction_score,0.443873,False,True,unresolved
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),45,cross-species (Figs. 1-3),i2,0.308108,i8,0.286486,2,i2;i8,median_prediction_score,0.333032,False,True,unresolved
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),46,cross-species (Figs. 1-3),i6,0.838323,i20,0.05988,1,i6,median_prediction_score,0.817135,False,True,many:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),47,cross-species (Figs. 1-3),i5,0.608696,i12,0.322981,2,i5;i12,median_prediction_score,0.820206,False,True,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),48,cross-species (Figs. 1-3),i9,0.741722,i5,0.066225,1,i9,median_prediction_score,0.726194,False,True,many:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),49,cross-species (Figs. 1-3),i8,0.938356,i32,0.034247,1,i8,median_prediction_score,0.8392,False,True,many:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),50,cross-species (Figs. 1-3),i38,0.725352,i34,0.204225,2,i38;i34,median_prediction_score,0.788482,True,False,1:many
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),51,cross-species (Figs. 1-3),i36,0.705882,i42,0.117647,1,i36,median_prediction_score,0.480556,False,True,many:1
+inhibitory,cross-condition vs cross-species,cross-condition (Figs. 4-6),52,cross-species (Figs. 1-3),i26,0.684211,i10,0.236842,2,i26;i10,median_prediction_score,0.562746,False,True,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),0,cross-species (Figs. 1-3),e21,0.99466,e27,0.002706,1,e21,fraction_singlet_by_RCTD,0.690579,True,True,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),1,cross-species (Figs. 1-3),e35,0.640758,e44,0.091261,1,e35,fraction_singlet_by_RCTD,0.2567,True,True,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),2,cross-species (Figs. 1-3),e10,0.138376,e19,0.123616,0,,fraction_singlet_by_RCTD,0.055802,False,True,unresolved
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),3,cross-species (Figs. 1-3),e26,0.439189,e27,0.355405,2,e26;e27,fraction_singlet_by_RCTD,0.385136,True,False,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),4,cross-species (Figs. 1-3),e25,0.516294,e18,0.315665,2,e25;e18,fraction_singlet_by_RCTD,0.273636,True,False,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),5,cross-species (Figs. 1-3),e1,0.281738,e36,0.118126,1,e1,fraction_singlet_by_RCTD,0.173417,False,True,unresolved
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),6,cross-species (Figs. 1-3),e1,0.560136,e13,0.337536,2,e1;e13,fraction_singlet_by_RCTD,0.256054,True,True,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),7,cross-species (Figs. 1-3),e4,0.240791,e25,0.181491,1,e4,fraction_singlet_by_RCTD,0.144321,True,True,unresolved
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),8,cross-species (Figs. 1-3),e6,0.389358,e11,0.271115,2,e6;e11,fraction_singlet_by_RCTD,0.156676,True,False,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),9,cross-species (Figs. 1-3),e2,0.493436,e36,0.284982,2,e2;e36,fraction_singlet_by_RCTD,0.415679,True,True,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),10,cross-species (Figs. 1-3),e19,0.546731,e15,0.348356,2,e19;e15,fraction_singlet_by_RCTD,0.3684,True,False,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),11,cross-species (Figs. 1-3),e31,0.384909,e13,0.285578,2,e31;e13,fraction_singlet_by_RCTD,0.146618,True,False,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),12,cross-species (Figs. 1-3),e30,0.904443,e21,0.052808,1,e30,fraction_singlet_by_RCTD,0.520203,True,True,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),13,cross-species (Figs. 1-3),e21,0.993174,e20,0.003223,1,e21,fraction_singlet_by_RCTD,0.804454,False,True,many:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),14,cross-species (Figs. 1-3),e32,0.248984,e8,0.219512,2,e32;e8,fraction_singlet_by_RCTD,0.155844,False,True,unresolved
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),15,cross-species (Figs. 1-3),e37,0.237822,e19,0.206304,2,e37;e19,fraction_singlet_by_RCTD,0.116781,False,True,unresolved
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),16,cross-species (Figs. 1-3),e38,0.628234,e27,0.141907,1,e38,fraction_singlet_by_RCTD,0.227357,True,False,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),17,cross-species (Figs. 1-3),e8,0.63306,e36,0.287222,2,e8;e36,fraction_singlet_by_RCTD,0.43513,True,True,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),18,cross-species (Figs. 1-3),e40,0.768344,e22,0.089099,1,e40,fraction_singlet_by_RCTD,0.177488,True,False,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),19,cross-species (Figs. 1-3),e34,0.780994,e42,0.12743,1,e34,fraction_singlet_by_RCTD,0.442808,True,False,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),20,cross-species (Figs. 1-3),e8,0.453704,e43,0.059524,1,e8,fraction_singlet_by_RCTD,0.148061,False,True,many:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),21,cross-species (Figs. 1-3),e7,0.862286,e1,0.053143,1,e7,fraction_singlet_by_RCTD,0.377562,True,False,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),22,cross-species (Figs. 1-3),e17,0.345826,e32,0.172061,1,e17,fraction_singlet_by_RCTD,0.126864,True,False,1:1 (weak)
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),23,cross-species (Figs. 1-3),e37,0.42351,e25,0.346216,2,e37;e25,fraction_singlet_by_RCTD,0.1491,True,True,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),24,cross-species (Figs. 1-3),e3,0.994083,e30,0.002113,1,e3,fraction_singlet_by_RCTD,0.571636,True,False,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),25,cross-species (Figs. 1-3),e9,0.988037,e18,0.004486,1,e9,fraction_singlet_by_RCTD,0.648171,True,False,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),26,cross-species (Figs. 1-3),e36,0.317714,e25,0.292571,3,e36;e25;e29,fraction_singlet_by_RCTD,0.217014,False,True,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),27,cross-species (Figs. 1-3),e32,0.553295,e26,0.194467,1,e32,fraction_singlet_by_RCTD,0.310589,True,True,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),28,cross-species (Figs. 1-3),e23,0.684659,e14,0.079545,1,e23,fraction_singlet_by_RCTD,0.093592,True,False,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),29,cross-species (Figs. 1-3),e10,0.928894,e9,0.037246,1,e10,fraction_singlet_by_RCTD,0.526441,True,True,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),30,cross-species (Figs. 1-3),e35,0.111274,e27,0.089312,0,,fraction_singlet_by_RCTD,0.209767,False,True,unresolved
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),31,cross-species (Figs. 1-3),e21,0.264706,e44,0.210784,2,e21;e44,fraction_singlet_by_RCTD,0.153096,False,True,unresolved
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),32,cross-species (Figs. 1-3),e30,0.352601,e27,0.33237,2,e30;e27,fraction_singlet_by_RCTD,0.133642,False,True,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),33,cross-species (Figs. 1-3),e36,0.994353,e2,0.001412,1,e36,fraction_singlet_by_RCTD,0.846276,True,True,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),34,cross-species (Figs. 1-3),e15,0.511905,e20,0.359524,2,e15;e20,fraction_singlet_by_RCTD,0.200382,False,True,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),35,cross-species (Figs. 1-3),e41,0.97973,e34,0.012387,1,e41,fraction_singlet_by_RCTD,0.494708,True,False,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),36,cross-species (Figs. 1-3),e44,0.684669,e2,0.259582,2,e44;e2,fraction_singlet_by_RCTD,0.347247,True,False,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),37,cross-species (Figs. 1-3),e43,0.890951,e7,0.055684,1,e43,fraction_singlet_by_RCTD,0.396869,True,False,1:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),38,cross-species (Figs. 1-3),e4,0.407407,e15,0.231481,2,e4;e15,fraction_singlet_by_RCTD,0.113924,False,True,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),39,cross-species (Figs. 1-3),e15,0.410714,e19,0.267857,2,e15;e19,fraction_singlet_by_RCTD,0.059259,False,True,1:many
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),40,cross-species (Figs. 1-3),e2,0.089552,e35,0.08209,0,,fraction_singlet_by_RCTD,0.16792,False,True,unresolved
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),41,cross-species (Figs. 1-3),e30,0.882064,e27,0.110565,1,e30,fraction_singlet_by_RCTD,0.653291,False,True,many:1
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),42,cross-species (Figs. 1-3),e36,0.202703,e2,0.108108,1,e36,fraction_singlet_by_RCTD,0.201635,False,True,unresolved
+excitatory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),43,cross-species (Figs. 1-3),e22,0.277778,e30,0.277778,2,e22;e30,fraction_singlet_by_RCTD,0.216867,False,False,unresolved
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),0,cross-species (Figs. 1-3),i21,0.548547,i11,0.327863,2,i21;i11,fraction_singlet_by_RCTD,0.382072,True,True,1:many
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),1,cross-species (Figs. 1-3),i4,0.752586,i24,0.155188,1,i4,fraction_singlet_by_RCTD,0.166544,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),2,cross-species (Figs. 1-3),i23,0.387718,i32,0.199588,1,i23,fraction_singlet_by_RCTD,0.230132,True,False,1:1 (weak)
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),3,cross-species (Figs. 1-3),i31,0.916049,i38,0.025811,1,i31,fraction_singlet_by_RCTD,0.420368,True,True,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),4,cross-species (Figs. 1-3),i38,0.61518,i36,0.254481,2,i38;i36,fraction_singlet_by_RCTD,0.259266,True,True,1:many
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),5,cross-species (Figs. 1-3),i9,0.212954,i22,0.167514,1,i9,fraction_singlet_by_RCTD,0.171135,False,True,unresolved
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),6,cross-species (Figs. 1-3),i3,0.941404,i18,0.009502,1,i3,fraction_singlet_by_RCTD,0.673581,True,True,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),7,cross-species (Figs. 1-3),i41,0.772404,i7,0.109223,1,i41,fraction_singlet_by_RCTD,0.415334,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),8,cross-species (Figs. 1-3),i14,0.834732,i38,0.056585,1,i14,fraction_singlet_by_RCTD,0.312062,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),9,cross-species (Figs. 1-3),i19,0.837968,i28,0.088225,1,i19,fraction_singlet_by_RCTD,0.365473,True,True,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),10,cross-species (Figs. 1-3),i31,0.296861,i17,0.246537,2,i31;i17,fraction_singlet_by_RCTD,0.145096,False,True,unresolved
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),11,cross-species (Figs. 1-3),i15,0.615759,i44,0.109742,1,i15,fraction_singlet_by_RCTD,0.252533,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),12,cross-species (Figs. 1-3),i46,0.980613,i47,0.005405,1,i46,fraction_singlet_by_RCTD,0.652134,True,True,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),13,cross-species (Figs. 1-3),i30,0.632792,i35,0.069513,1,i30,fraction_singlet_by_RCTD,0.207836,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),14,cross-species (Figs. 1-3),i7,0.503118,i22,0.164458,1,i7,fraction_singlet_by_RCTD,0.210035,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),15,cross-species (Figs. 1-3),i26,0.832187,i41,0.071766,1,i26,fraction_singlet_by_RCTD,0.405648,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),16,cross-species (Figs. 1-3),i11,0.295883,i12,0.289342,2,i11;i12,fraction_singlet_by_RCTD,0.230817,False,True,unresolved
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),17,cross-species (Figs. 1-3),i16,0.945469,i11,0.024519,1,i16,fraction_singlet_by_RCTD,0.466807,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),18,cross-species (Figs. 1-3),i27,0.530154,i38,0.20011,2,i27;i38,fraction_singlet_by_RCTD,0.174162,False,True,1:many
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),19,cross-species (Figs. 1-3),i8,0.919105,i23,0.054635,1,i8,fraction_singlet_by_RCTD,0.555349,True,True,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),20,cross-species (Figs. 1-3),i3,0.920076,i28,0.013817,1,i3,fraction_singlet_by_RCTD,0.380398,False,True,many:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),21,cross-species (Figs. 1-3),i44,0.706031,i13,0.268328,2,i44;i13,fraction_singlet_by_RCTD,0.588273,True,True,1:many
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),22,cross-species (Figs. 1-3),i21,0.10219,i29,0.10219,0,,fraction_singlet_by_RCTD,0.145776,False,True,unresolved
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),23,cross-species (Figs. 1-3),i10,0.351642,i41,0.349898,2,i10;i41,fraction_singlet_by_RCTD,0.373372,False,True,1:many
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),24,cross-species (Figs. 1-3),i25,0.788325,i29,0.129569,1,i25,fraction_singlet_by_RCTD,0.399913,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),25,cross-species (Figs. 1-3),i34,0.459868,i35,0.324932,2,i34;i35,fraction_singlet_by_RCTD,0.299431,True,False,1:many
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),26,cross-species (Figs. 1-3),i27,0.963191,i44,0.024871,1,i27,fraction_singlet_by_RCTD,0.593809,True,True,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),27,cross-species (Figs. 1-3),i28,0.647847,i43,0.195153,1,i28,fraction_singlet_by_RCTD,0.464273,True,True,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),28,cross-species (Figs. 1-3),i33,0.95644,i3,0.033724,1,i33,fraction_singlet_by_RCTD,0.557368,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),29,cross-species (Figs. 1-3),i8,0.981277,i37,0.006241,1,i8,fraction_singlet_by_RCTD,0.637026,False,True,many:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),30,cross-species (Figs. 1-3),i29,0.252146,i24,0.214592,2,i29;i24,fraction_singlet_by_RCTD,0.124782,False,False,unresolved
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),31,cross-species (Figs. 1-3),i40,0.806991,i21,0.061803,1,i40,fraction_singlet_by_RCTD,0.26719,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),32,cross-species (Figs. 1-3),i38,0.326817,i1,0.32381,3,i38;i1;i13,fraction_singlet_by_RCTD,0.270655,False,True,1:many
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),33,cross-species (Figs. 1-3),i20,0.970194,i47,0.013387,1,i20,fraction_singlet_by_RCTD,0.547201,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),34,cross-species (Figs. 1-3),i10,0.539767,i41,0.384359,2,i10;i41,fraction_singlet_by_RCTD,0.426483,True,True,1:many
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),35,cross-species (Figs. 1-3),i11,0.541222,i21,0.161494,1,i11,fraction_singlet_by_RCTD,0.315242,False,True,many:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),36,cross-species (Figs. 1-3),i9,0.246273,i40,0.236552,2,i9;i40,fraction_singlet_by_RCTD,0.243375,False,True,unresolved
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),37,cross-species (Figs. 1-3),i18,0.521453,i1,0.313104,2,i18;i1,fraction_singlet_by_RCTD,0.458444,True,False,1:many
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),38,cross-species (Figs. 1-3),i46,0.349014,i8,0.301973,2,i46;i8,fraction_singlet_by_RCTD,0.12008,False,True,1:many
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),39,cross-species (Figs. 1-3),i8,0.277533,i14,0.217327,2,i8;i14,fraction_singlet_by_RCTD,0.126887,False,True,unresolved
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),40,cross-species (Figs. 1-3),i37,0.986237,i41,0.004028,1,i37,fraction_singlet_by_RCTD,0.677353,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),41,cross-species (Figs. 1-3),i47,0.930876,i20,0.048643,1,i47,fraction_singlet_by_RCTD,0.449379,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),42,cross-species (Figs. 1-3),i48,0.739884,i21,0.129094,1,i48,fraction_singlet_by_RCTD,0.366008,True,True,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),43,cross-species (Figs. 1-3),i19,0.686314,i27,0.198801,1,i19,fraction_singlet_by_RCTD,0.246856,False,True,many:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),44,cross-species (Figs. 1-3),i9,0.504838,i22,0.394991,2,i9;i22,fraction_singlet_by_RCTD,0.450628,False,True,1:many
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),45,cross-species (Figs. 1-3),i38,0.176871,i3,0.147392,0,,fraction_singlet_by_RCTD,0.113368,False,True,unresolved
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),46,cross-species (Figs. 1-3),i3,0.601896,i31,0.14534,1,i3,fraction_singlet_by_RCTD,0.185576,False,True,many:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),47,cross-species (Figs. 1-3),i42,0.975972,i31,0.010601,1,i42,fraction_singlet_by_RCTD,0.491149,True,False,1:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),48,cross-species (Figs. 1-3),i28,0.748649,i43,0.113514,1,i28,fraction_singlet_by_RCTD,0.302164,False,True,many:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),49,cross-species (Figs. 1-3),i44,0.428969,i27,0.364903,2,i44;i27,fraction_singlet_by_RCTD,0.153616,False,True,1:many
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),50,cross-species (Figs. 1-3),i48,0.552966,i36,0.161017,1,i48,fraction_singlet_by_RCTD,0.202401,False,True,many:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),51,cross-species (Figs. 1-3),i13,0.602871,i34,0.145933,1,i13,fraction_singlet_by_RCTD,0.19551,False,False,1:1 (weak)
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),52,cross-species (Figs. 1-3),i44,0.438078,i27,0.395564,2,i44;i27,fraction_singlet_by_RCTD,0.316559,False,True,1:many
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),53,cross-species (Figs. 1-3),i35,0.38326,i16,0.211454,2,i35;i16,fraction_singlet_by_RCTD,0.175697,False,False,1:many
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),54,cross-species (Figs. 1-3),i22,0.405882,i41,0.111765,1,i22,fraction_singlet_by_RCTD,0.134281,False,False,1:1 (weak)
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),55,cross-species (Figs. 1-3),i3,0.543103,i33,0.181034,1,i3,fraction_singlet_by_RCTD,0.125135,False,True,many:1
+inhibitory,"Xenium vs cross-species (RCTD, singlets)",Xenium (Figs. 7-9),56,cross-species (Figs. 1-3),i28,1.0,i1,0.0,1,i28,fraction_singlet_by_RCTD,0.415,False,True,many:1
