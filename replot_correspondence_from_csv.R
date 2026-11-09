@@ -57,10 +57,14 @@ key     <- paste(df0$query_cluster, df0$ref_label)
 fwd_hit <- paste(rownames(M_fwd), best_fwd)
 rev_hit <- paste(best_rev, rownames(M_rev))
 df0$mark <- dplyr::case_when(
-  key %in% fwd_hit & key %in% rev_hit ~ "reciprocal best hit",
-  key %in% fwd_hit                    ~ "forward best only",
-  key %in% rev_hit                    ~ "reverse best only",
+  key %in% fwd_hit & key %in% rev_hit ~ "reciprocal best",
+  key %in% fwd_hit ~ "one-directional best",
+  key %in% rev_hit ~ "one-directional best",
   TRUE                                ~ NA_character_)
+
+# legend order: reciprocal first, then one-directional (forward-only or reverse-only)
+MARK_LEVELS <- c("reciprocal best", "one-directional best")
+df0$mark <- factor(df0$mark, levels = MARK_LEVELS)
 
 bar_df <- data.frame(
   query_cluster = tab$query_cluster,
@@ -86,56 +90,104 @@ sourcedata <- rbind(
 write.csv(sourcedata, f("sourcedata_fig_correspondence"), row.names = FALSE)
 
 # --- plotting ----------------------------------------------------------------
-base_theme <- theme_bw(base_size = 11) +
+# Figures are drawn at their final printed size so that the point sizes set
+# here are the point sizes that appear on the page; nothing is rescaled when
+# the panel is placed into the assembled figure. TILE_MM is the centre-to-centre
+# tile spacing, held constant across all four correspondence panels so they form
+# a visually consistent set.
+TICK_EVERY <- as.integer(Sys.getenv("TICK_EVERY", "10"))
+TILE_MM    <- as.numeric(Sys.getenv("TILE_MM", "1.283"))
+BASE_PT    <- as.numeric(Sys.getenv("BASE_PT", "7"))   # Nature Portfolio: 5-7 pt body text
+YLAB_PT    <- as.numeric(Sys.getenv("YLAB_PT", "4"))   # y-axis cluster numbers
+# Margins reserved for axis labels, titles and legend (mm). These depend on the
+# text, not on the figure size, so they were measured once from a rendered
+# panel by calibrate_panel_size.py and fixed here; with them the tile pitch
+# comes out at TILE_MM for every figure.
+.cal <- list(Ex = c(31.9, 11.6), Inh = c(31.9, 11.7))[[CLASS]]
+MARGIN_W_MM <- as.numeric(Sys.getenv("MARGIN_W_MM", .cal[1]))
+MARGIN_H_MM <- as.numeric(Sys.getenv("MARGIN_H_MM", .cal[2]))
+BAR_FRAC    <- as.numeric(Sys.getenv("BAR_FRAC", "0.22"))  # bar height / heatmap
+
+base_theme <- theme_bw(base_size = BASE_PT) +
   theme(panel.grid = element_blank(),
-        axis.ticks = element_line(linewidth = 0.3),
-        legend.key.height = unit(0.9, "lines"),
+        axis.ticks = element_line(linewidth = 0.15),
+        axis.ticks.length = unit(0.6, "mm"),
         legend.background = element_blank(),
-        plot.title = element_text(size = 12, face = "plain"),
-        plot.subtitle = element_text(size = 9, colour = "grey30"),
-        axis.title.x = element_text(size = 9))
+        legend.key.height = unit(3.2, "mm"),
+        legend.key.width  = unit(3.2, "mm"),
+        legend.spacing.y  = unit(1, "mm"),
+        legend.text  = element_text(size = BASE_PT),
+        legend.title = element_text(size = BASE_PT),
+        legend.margin = margin(0, 0, 0, 1, "mm"),
+        plot.margin = margin(1, 1, 1, 1, "mm"))
 
-make_fig <- function(row_ord, col_ord, subtitle) {
+# ---------------------------------------------------------------------------
+# Panel layout, matching the arrangement used in the manuscript figures:
+#   x = query cluster in native numbering, ticked every TICK_EVERY;
+#   y = cross-species subtype, ordered so the best matches run down the
+#       diagonal, every label shown;
+#   a confidence bar aligned above the heatmap, sharing the x axis;
+#   no tile borders and no threshold lines -- the cut-offs are given in the
+#   Methods and drawing them here would imply they are standard values.
+# ---------------------------------------------------------------------------
+
+make_fig <- function(x_ord, y_ord, conf_var, conf_lab, y_title) {
   d <- df0
-  d$query_cluster <- factor(d$query_cluster, levels = rev(row_ord))
-  d$ref_label     <- factor(d$ref_label, levels = col_ord)
-  b <- bar_df; b$query_cluster <- factor(b$query_cluster, levels = rev(row_ord))
+  d$query_cluster <- factor(d$query_cluster, levels = x_ord)
+  d$ref_label     <- factor(d$ref_label, levels = rev(y_ord))
+  b <- bar_df; b$query_cluster <- factor(b$query_cluster, levels = x_ord)
 
-  pA <- ggplot(d, aes(ref_label, query_cluster, fill = frac)) +
-    geom_tile(colour = "grey92", linewidth = 0.12) +
-    geom_point(data = subset(d, !is.na(mark)),
-               aes(shape = mark, colour = mark), size = 1.7, stroke = 0.7) +
+  xbreaks <- x_ord[suppressWarnings(as.integer(x_ord)) %% TICK_EVERY == 0]
+  if (!length(xbreaks)) xbreaks <- x_ord[seq(1, length(x_ord), by = TICK_EVERY)]
+
+  pA <- ggplot(d, aes(query_cluster, ref_label, fill = frac)) +
+    geom_tile() +
+    # best matches are shown as a red frame around the tile: full red for
+    # reciprocal best, pale red for one-directional (forward or reverse) best
+    geom_tile(data = subset(d, !is.na(mark)),
+              aes(colour = mark), fill = NA, linewidth = 0.3,
+              width = 0.88, height = 0.88) +
     scale_fill_gradientn(
       colours = c("white", "#d9e7f5", "#6baed6", "#2171b5", "#08306b"),
-      limits = c(0, 1), name = "fraction of\nquery cluster") +
-    scale_shape_manual(values = c("reciprocal best hit" = 21,
-                                  "forward best only" = 4,
-                                  "reverse best only" = 3), name = NULL) +
-    scale_colour_manual(values = c("reciprocal best hit" = "#d62728",
-                                   "forward best only" = "#d62728",
-                                   "reverse best only" = "grey25"), name = NULL) +
-    labs(x = "cross-species atlas subtype (celltype_display, Figs. 1-3)",
-         y = "cross-condition cluster (Figs. 4-6)",
-         title = sprintf("Label transfer, %s neurons", CLASS_LONG),
-         subtitle = subtitle) +
+      limits = c(0, 1), breaks = c(0, 0.5, 1), labels = c("0", "0.5", "1.0"),
+      name = "Fraction of\nquery cluster") +
+    scale_colour_manual(values = c("reciprocal best" = "#d62728",
+                                   "one-directional best" = "#f4a6a6"),
+                        name = NULL,
+                        drop = FALSE) +
+    # a tick at every cluster; numeric labels only every TICK_EVERY so they
+    # do not collide at the 1.28 mm tile pitch
+    scale_x_discrete(breaks = x_ord,
+                     labels = ifelse(x_ord %in% xbreaks, x_ord, ""),
+                     expand = c(0, 0)) +
+    scale_y_discrete(expand = c(0, 0)) +
+    # fix the stacking order of the two legend blocks so every panel matches
+    guides(colour = guide_legend(order = 1,
+                                 override.aes = list(fill = "#6baed6",
+                                                     linewidth = 0.4)),
+           fill = guide_colourbar(order = 2)) +
+    labs(x = NULL, y = y_title) +
     base_theme +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 7),
-          axis.text.y = element_text(size = 7))
+    theme(axis.text.x = element_text(size = BASE_PT),
+          axis.text.y = element_text(size = YLAB_PT, margin = margin(r = 0.4, unit = "mm")),
+          axis.title.y = element_text(size = BASE_PT),
+          panel.border = element_rect(colour = "black", fill = NA,
+                                      linewidth = 0.25))
 
-  bar <- function(var, xint, xlab) {
-    ggplot(b, aes(.data[[var]], query_cluster)) +
-      geom_col(fill = "grey70", width = 0.75) +
-      geom_vline(xintercept = xint, linetype = "dashed",
-                 colour = "#d62728", linewidth = 0.4) +
-      scale_x_continuous(limits = c(0, 1), breaks = c(0, 0.5, 1),
-                         labels = c("0", "0.5", "1")) +
-      labs(x = xlab, y = NULL) + base_theme +
-      theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
-  }
-  pA +
-    bar("med_score", TH_SCORE_MIN,    "median score") +
-    bar("frac_best", TH_FRAC_PRIMARY, "best-match frac.") +
-    plot_layout(widths = c(6, 1.3, 1.3), guides = "collect")
+  pTop <- ggplot(b, aes(query_cluster, .data[[conf_var]])) +
+    geom_col(fill = "grey70", width = 0.85) +
+    scale_y_continuous(limits = c(0, 1), breaks = c(0, 0.5, 1),
+                       labels = c("0", "0.5", "1.0"), expand = c(0, 0)) +
+    scale_x_discrete(expand = c(0, 0)) +
+    labs(x = NULL, y = conf_lab) +
+    base_theme +
+    theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+          axis.text.y = element_text(size = BASE_PT),
+          axis.title.y = element_text(size = BASE_PT),
+          panel.border = element_rect(colour = "black", fill = NA,
+                                      linewidth = 0.25))
+
+  pTop / pA + plot_layout(heights = c(BAR_FRAC, 1), guides = "collect")
 }
 
 # ---------------------------------------------------------------------------
@@ -163,19 +215,22 @@ cols_for_fixed_rows <- function(M, row_order) {
 }
 
 save_fig <- function(p, stem) {
-  h <- max(6, 0.17 * nrow(M_fwd) + 2.2)
-  w <- max(8, 0.17 * ncol(M_fwd) + 5.6)
-  ggsave(file.path(OUTDIR, sprintf("%s_%s.png", stem, CLASS)), p,
-         width = w, height = h, dpi = 300, bg = "white", limitsize = FALSE)
-  ggsave(file.path(OUTDIR, sprintf("%s_%s.pdf", stem, CLASS)), p,
-         width = w, height = h, bg = "white", limitsize = FALSE)
+  # drawn at final printed size: tile pitch is TILE_MM, so the point sizes set
+  # above are the point sizes that appear on the page
+  w <- TILE_MM * nrow(M_fwd) + MARGIN_W_MM
+  h <- TILE_MM * ncol(M_fwd) * (1 + BAR_FRAC) + MARGIN_H_MM
+  cat(sprintf("%s: page %.1f x %.1f mm; heatmap requested %.1f x %.1f mm\n",
+            stem, w, h, TILE_MM * nrow(M_fwd), TILE_MM * ncol(M_fwd)))
+  sv <- function(ext, ...) ggsave(file.path(OUTDIR, sprintf("%s_%s.%s", stem, CLASS, ext)),
+                                  p, width = w, height = h, units = "mm",
+                                  bg = "white", limitsize = FALSE, ...)
+  sv("png", dpi = 600)
+  sv("pdf")
   # EPS for journal submission. The PostScript device has no alpha channel,
   # so the figure is built from fully opaque fills and strokes only; cairo_ps
   # is used when available because it embeds fonts more reliably.
   eps_dev <- if (isTRUE(capabilities("cairo"))) grDevices::cairo_ps else "eps"
-  ggsave(file.path(OUTDIR, sprintf("%s_%s.eps", stem, CLASS)), p,
-         device = eps_dev, width = w, height = h, bg = "white",
-         fallback_resolution = 600, limitsize = FALSE)
+  sv("eps", device = eps_dev, fallback_resolution = 600)
 }
 
 row_native <- rownames(M_fwd)        # already in natural cluster order
@@ -186,7 +241,8 @@ col_native <- colnames(M_fwd)
 # bottom-right while the y axis keeps the manuscript's cluster numbering.
 # Columns carrying no mass at all are parked at the right-hand edge.
 save_fig(make_fig(row_native, cols_for_fixed_rows(M_fwd, row_native),
-  "rows in native cross-condition cluster order; columns sorted to the diagonal"),
-  "fig_correspondence_rowNumberColSorted")
+                  conf_var = "med_score", conf_lab = "median score",
+                  y_title  = "Cross-species cluster No."),
+         "fig_correspondence_rowNumberColSorted")
 
 message("done -> ", normalizePath(OUTDIR))
