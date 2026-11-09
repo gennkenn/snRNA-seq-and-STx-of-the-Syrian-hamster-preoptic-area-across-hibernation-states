@@ -28,15 +28,18 @@
 #      The query's SCT assay is deliberately NOT used, because the reference
 #      was log-normalised; mixing normalisations biases anchor finding.
 #   3. Forward transfer : REF -> QRY   (each query cell gets a predicted e-label)
-#   4. Reverse transfer : QRY -> REF   (each reference hamster cell gets a
-#      predicted cross-condition cluster id)
+#   4. Reverse transfer : QRY -> REF   (each reference cell gets a predicted
+#      cross-condition cluster id)
 #   5. Cross-tabulate, take reciprocal best hits, and classify each pair as
 #      1:1 / 1:many / many:1 / unresolved using explicit thresholds.
 #
-#   The primary reference is the HAMSTER-ONLY subset of REF (species-matched
-#   to the query). A sensitivity run using all REF cells (mouse + hamster) is
-#   also performed, because several e-labels contain few or no hamster cells
-#   and are therefore not representable in a hamster-only reference.
+#   The primary reference (REF_MODE, default "all") is every nucleus of REF,
+#   mouse and hamster, labelled by subtype: this makes all subtypes assessable
+#   and matches the reference used for RCTD on the Xenium data. Subtypes that
+#   are depleted in the hamster dataset reflect differences in the dissected
+#   region rather than species differences, so there is no reason to drop
+#   them. The hamster-only subset is run as a sensitivity check and the
+#   agreement of best matches is reported. REF_MODE=hamster swaps the roles.
 #
 # Outputs (written to OUTDIR; <CLASS> is Ex or Inh)
 #   correspondence_table_<CLASS>.csv              per-query-cluster summary
@@ -44,7 +47,7 @@
 #   correspondence_matrix_reverse_<CLASS>.csv     ref label x query cluster
 #   percell_predictions_query_<CLASS>.csv         per-cell predicted label + score
 #   percell_predictions_reference_<CLASS>.csv     per-cell predicted cluster + score
-#   reference_label_representation_<CLASS>.csv    hamster cell count per ref label
+#   reference_label_representation_<CLASS>.csv    cell count per ref label and species
 #
 # The figure and its source-data file are produced separately by
 # replot_correspondence_from_csv.R, which reads the CSVs above.
@@ -75,12 +78,18 @@ out <- function(stem, ext) file.path(OUTDIR, sprintf("%s_%s.%s", stem, CLASS, ex
 
 REF_LABEL_COL <- "celltype_display"   # e1 - e44
 SPECIES_COL   <- "Species"
-REF_SPECIES   <- "hamster"            # species-matched reference subset
+REF_SPECIES   <- "hamster"            # species used by the hamster-only reference
+# Which reference is primary. "all" uses every nucleus of the cross-species
+# object (mouse + hamster), so that all subtypes are assessable and the
+# reference matches the one used for RCTD on the Xenium data; "hamster"
+# restricts to hamster nuclei. The other option is always run as a
+# sensitivity check and reported alongside.
+REF_MODE      <- match.arg(Sys.getenv("REF_MODE", "all"), c("all", "hamster"))
 
 N_HVG   <- 2000   # variable features used to build each reference
 N_PCS   <- 30     # dimensions used for anchor finding and weighting
 K_ANCHOR <- 5
-MIN_REF_CELLS <- 10   # e-labels with fewer hamster cells are not assessable
+MIN_REF_CELLS <- 10   # labels with fewer cells in the primary reference are not assessable
 
 # Correspondence-calling thresholds (stated explicitly so they can be reported)
 TH_FRAC_PRIMARY  <- 0.50  # >= 50% of a query cluster assigned to one label
@@ -206,42 +215,59 @@ shared_genes <- intersect(rownames(ref_full[["RNA"]]), rownames(qry_raw[["RNA"]]
 message(sprintf("reference: %d cells / query: %d cells / shared genes: %d",
                 ncol(ref_full), ncol(qry_raw), length(shared_genes)))
 
-# How well is each e-label represented by hamster cells? This bounds what a
-# species-matched reference can possibly recover.
+# How well is each label represented, per species? For the hamster-only
+# reference this bounds what a species-matched reference can recover.
 rep_tab <- as.data.frame(table(ref_full$.label,
                                ref_full[[SPECIES_COL]][, 1])) |>
   tidyr::pivot_wider(names_from = Var2, values_from = Freq) |>
   dplyr::rename(label = Var1) |>
   dplyr::mutate(label = factor(label, levels = e_levels)) |>
   dplyr::arrange(label)
+rep_tab$total <- rowSums(rep_tab[, setdiff(colnames(rep_tab), "label"), drop = FALSE])
 rep_tab$assessable_hamster_ref <- rep_tab[[REF_SPECIES]] >= MIN_REF_CELLS
+rep_tab$assessable_all_ref     <- rep_tab$total          >= MIN_REF_CELLS
 write.csv(rep_tab, out("reference_label_representation", "csv"),
           row.names = FALSE)
 
 # ----------------------------------------------------------------------------
-# 3. Prepare the three working objects
+# 3. Prepare the working objects: query, primary reference, sensitivity reference
 # ----------------------------------------------------------------------------
 message("== preparing objects ==")
 qry <- prep_object(qry_raw, shared_genes)
 
-ref_ham <- subset(ref_full, cells = colnames(ref_full)[
-  ref_full[[SPECIES_COL]][, 1] == REF_SPECIES])
-keep_lab <- as.character(rep_tab$label[rep_tab$assessable_hamster_ref])
-ref_ham <- subset(ref_ham, cells = colnames(ref_ham)[ref_ham$.label %in% keep_lab])
-ref_ham <- prep_object(ref_ham, shared_genes)
-message(sprintf("hamster-only reference: %d cells, %d labels retained (>= %d cells)",
-                ncol(ref_ham), length(keep_lab), MIN_REF_CELLS))
+ham_cells <- colnames(ref_full)[ref_full[[SPECIES_COL]][, 1] == REF_SPECIES]
+lab_ham   <- as.character(rep_tab$label[rep_tab$assessable_hamster_ref])
+lab_all   <- as.character(rep_tab$label[rep_tab$assessable_all_ref])
 
-ref_all <- prep_object(ref_full, shared_genes)   # sensitivity reference
+ref_ham <- subset(ref_full, cells = ham_cells)
+ref_ham <- subset(ref_ham, cells = colnames(ref_ham)[ref_ham$.label %in% lab_ham])
+ref_all <- subset(ref_full, cells = colnames(ref_full)[ref_full$.label %in% lab_all])
+ref_ham <- prep_object(ref_ham, shared_genes)
+ref_all <- prep_object(ref_all, shared_genes)
+message(sprintf("hamster-only reference: %d cells, %d labels (>= %d cells)",
+                ncol(ref_ham), length(lab_ham), MIN_REF_CELLS))
+message(sprintf("all-nuclei reference  : %d cells, %d labels (>= %d cells)",
+                ncol(ref_all), length(lab_all), MIN_REF_CELLS))
+
+if (REF_MODE == "all") {
+  ref_main <- ref_all; keep_lab <- lab_all
+  ref_sens <- ref_ham; SENS_NAME <- "hamster_only_ref"
+} else {
+  ref_main <- ref_ham; keep_lab <- lab_ham
+  ref_sens <- ref_all; SENS_NAME <- "allspecies_ref"
+}
+message(sprintf("primary reference = %s (%d cells); sensitivity = %s",
+                REF_MODE, ncol(ref_main), SENS_NAME))
+rm(ref_ham, ref_all); invisible(gc())
 
 # ----------------------------------------------------------------------------
 # 4. Forward transfer: reference e-labels -> query cells
 # ----------------------------------------------------------------------------
-message("== forward transfer (hamster-only reference) ==")
-pred_fwd <- run_transfer(ref_ham, qry, refdata = ref_ham$.label)
+message(sprintf("== forward transfer (primary reference: %s) ==", REF_MODE))
+pred_fwd <- run_transfer(ref_main, qry, refdata = ref_main$.label)
 
-message("== forward transfer (all-species reference, sensitivity) ==")
-pred_fwd_all <- run_transfer(ref_all, qry, refdata = ref_all$.label)
+message(sprintf("== forward transfer (sensitivity reference: %s) ==", SENS_NAME))
+pred_fwd_all <- run_transfer(ref_sens, qry, refdata = ref_sens$.label)
 
 qry$pred_label       <- pred_fwd$predicted.id
 qry$pred_score       <- pred_fwd$prediction.score.max
@@ -254,28 +280,29 @@ percell_q <- data.frame(
   condition         = if ("Mode" %in% colnames(qry@meta.data)) qry$Mode else NA,
   predicted_label   = qry$pred_label,
   prediction_score  = qry$pred_score,
-  predicted_label_allspecies_ref = qry$pred_label_allsp,
-  prediction_score_allspecies_ref = qry$pred_score_allsp,
+  predicted_label_sensitivity_ref = qry$pred_label_allsp,
+  prediction_score_sensitivity_ref = qry$pred_score_allsp,
+  sensitivity_ref = SENS_NAME,
   stringsAsFactors  = FALSE
 )
 write.csv(percell_q, out("percell_predictions_query", "csv"),
           row.names = FALSE)
 
 # ----------------------------------------------------------------------------
-# 5. Reverse transfer: query cluster ids -> reference hamster cells
+# 5. Reverse transfer: query cluster ids -> cells of the primary reference
 # ----------------------------------------------------------------------------
 message("== reverse transfer (query as reference) ==")
-ref_ham_q <- ref_ham   # query role in this direction
-pred_rev <- run_transfer(qry, ref_ham_q, refdata = qry$.label)
+pred_rev <- run_transfer(qry, ref_main, refdata = qry$.label)
 
-ref_ham$pred_cluster <- pred_rev$predicted.id
-ref_ham$pred_score   <- pred_rev$prediction.score.max
+ref_main$pred_cluster <- pred_rev$predicted.id
+ref_main$pred_score   <- pred_rev$prediction.score.max
 
 percell_r <- data.frame(
-  cell             = colnames(ref_ham),
-  reference_label  = ref_ham$.label,
-  predicted_cluster = ref_ham$pred_cluster,
-  prediction_score = ref_ham$pred_score,
+  cell             = colnames(ref_main),
+  reference_label  = ref_main$.label,
+  species          = ref_main[[SPECIES_COL]][, 1],
+  predicted_cluster = ref_main$pred_cluster,
+  prediction_score = ref_main$pred_score,
   stringsAsFactors = FALSE
 )
 write.csv(percell_r, out("percell_predictions_reference", "csv"),
@@ -289,8 +316,8 @@ lab_used <- intersect(e_levels, keep_lab)
 
 M_fwd <- frac_matrix(factor(qry$.label, levels = q_levels),
                      qry$pred_label, lab_used)                 # cluster x label
-M_rev <- frac_matrix(factor(ref_ham$.label, levels = lab_used),
-                     ref_ham$pred_cluster, q_levels)           # label x cluster
+M_rev <- frac_matrix(factor(ref_main$.label, levels = lab_used),
+                     ref_main$pred_cluster, q_levels)           # label x cluster
 
 write.csv(round(M_fwd, 6), out("correspondence_matrix_forward", "csv"))
 write.csv(round(M_rev, 6), out("correspondence_matrix_reverse", "csv"))
@@ -322,7 +349,7 @@ summ <- lapply(rownames(M_fwd), function(q) {
     reverse_best_of_best_label = unname(best_rev[bl]),
     reciprocal          = recip,
     many_to_one         = many_to_one,
-    best_label_allspecies_ref = names(sort(table(
+    best_label_sensitivity_ref = names(sort(table(
       qry$pred_label_allsp[qry$.label == q]), decreasing = TRUE))[1],
     stringsAsFactors = FALSE
   )
@@ -335,15 +362,16 @@ summ$relation <- with(summ, dplyr::case_when(
   many_to_one ~ "many:1",
   TRUE ~ "1:1 (weak)"
 ))
-summ$agree_with_allspecies_ref <- summ$best_label == summ$best_label_allspecies_ref
+summ$sensitivity_ref <- SENS_NAME
+summ$agree_with_sensitivity_ref <- summ$best_label == summ$best_label_sensitivity_ref
 
 summ <- summ[order(match(summ$query_cluster, q_levels)), ]
 write.csv(summ, out("correspondence_table", "csv"), row.names = FALSE)
 
 cat("\n---- relation summary ----\n"); print(table(summ$relation))
 cat("---- reciprocal best hits:", sum(summ$reciprocal), "/", nrow(summ), "----\n")
-cat("---- agreement with all-species reference:",
-    sum(summ$agree_with_allspecies_ref), "/", nrow(summ), "----\n")
+cat("---- agreement with sensitivity reference (", SENS_NAME, "):",
+    sum(summ$agree_with_sensitivity_ref), "/", nrow(summ), "----\n")
 cat("---- e-labels never used as a best match:",
     paste(setdiff(lab_used, summ$best_label), collapse = ", "), "----\n\n")
 
