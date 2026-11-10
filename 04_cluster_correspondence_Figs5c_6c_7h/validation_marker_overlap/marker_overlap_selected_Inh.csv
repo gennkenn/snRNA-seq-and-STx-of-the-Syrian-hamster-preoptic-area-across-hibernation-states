@@ -1,0 +1,6 @@
+"query_cluster","ref_subtype","lt_frac_best","n_markers_qry","n_markers_ref","n_shared","jaccard","hypergeom_p","rank_of_lt_best","shared_markers"
+"19","i14",0.986166007905138,100,100,35,0.212,7.81e-52,1,"Nr4a2 Tmem163 Prdm16 Pcdh11x Ano1 Cacng5 Spag16 Otx2 Trpc4 Cntn5 Megf11 Nfib Nox4 Prkca Cdh7 Adgrv1 Zic4 Gfra1 Zic2 Kcng2 Chd7 Tafa4 Ndst4 Gria3 Sox5 Hunk Syt17 Gpc3 Mdga1 Zic1 Nfia Rtn4rl1 Trpc3 Tpcn1 Cobll1"
+"37","i20",0.907692307692308,100,100,32,0.19,8.95e-46,1,"Nr2f2 Piezo2 Stum Prox1 Tmem132d Trhr Cfap54 Plpp4 Slc24a4 Fign Dpyd Spon1 Ptprt Sv2c Hrh1 Tpd52l1 Bmp1 Marchf3 Epsti1 Rasal1 Scn5a Kcnh1 Lrguk Zbtb7c Nr2f1 Igsf1 Kcnk9 Sp9 Cpne6 Gdpd2 Galr1 Rfx2"
+"1","i13",0.77662037037037,100,100,43,0.274,4.15e-69,1,"Cdh12 Pde11a Sv2c Ccdc141 Gal Mrap2 Amigo2 Hs6st2 Gli3 Asb4 Alk Dysf Rasgef1c Thsd7b Ecel1 C1ql3 Calcr Smarca2 Tnr Isl1 Maml3 Peg10 Clic5 Ano4 Gpc4 Reln Greb1l Hmx2 Epha3 Zfpm2 Sel1l3 Sntb1 Plpp4 Zfhx4 Col11a2 Hr Gpc3 Col4a5 Rgs4 Gpr139"
+"47","i5",0.602484472049689,100,100,14,0.075,9.59e-15,3,"Meis2 Bmpr1b Gda Pdgfc Cbfa2t3 Grm8 Lmo3 Nrgn Rgs14 Chrm1 Cpne7 Kcnip2 Rasal1 Htr1f"
+"41","i16",0.316279069767442,100,100,32,0.19,8.95e-46,1,"Slc4a4 Meis2 Chst9 Drd1 Tshz1 Smad3 Lrrk2 Chrm1 Wls Adamts3 Pbx3 Ngef Necab1 Inf2 Sema5b Kcnh3 Jcad Gpr88 Rasgrp1 Otof Pcp4 Stc1 Sp9 Grm4 Fam163b Lypd1 Gdpd5 Lamp5 Mdga1 Map3k20 Vwc2l Rprml"

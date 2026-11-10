@@ -12,6 +12,7 @@ The cross-species subtypes (e/i) serve as the common vocabulary. The two sub-fol
 
 * `label_transfer_Fig5c_6c/` — cross-condition cluster ↔ cross-species subtype, by bidirectional Seurat label transfer (snRNA-seq to snRNA-seq, ~13–14 k shared genes). Produces Fig. 5c (excitatory) and Fig. 6c (inhibitory).
 * `xenium_rctd_Fig7h/` — Xenium cluster ↔ cross-species subtype, from the RCTD assignment of each Xenium cell (100-gene panel; only cells RCTD classified as `singlet` are used). Produces Fig. 7h.
+* `validation_marker_overlap/` — independent check of the label-transfer pairs by overlap of marker genes derived separately in each dataset (Jaccard, hypergeometric test).
 * `source_data/` — every value plotted in Figs. 5c, 6c and 7h, plus per-cluster summary tables and one master table.
 
 ## Vocabulary used in all tables
