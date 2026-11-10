@@ -51,6 +51,12 @@ suppressPackageStartupMessages({
 STXDIR   <- Sys.getenv("STXDIR", ".")
 OUTDIR   <- Sys.getenv("OUTDIR", "./out")
 MAXCORES <- as.integer(Sys.getenv("MAXCORES", "16"))
+# Which neuronal classes to run, and where to look for per-FOV results that a
+# previous run already produced. A FOV whose CSV is found in PRECOMPUTED_DIR is
+# loaded instead of re-fitted, so an interrupted run resumes where it stopped
+# rather than repeating hours of identical computation.
+CLASSES  <- strsplit(Sys.getenv("CLASSES", "EX,IN"), ",")[[1]]
+PRECOMP  <- Sys.getenv("PRECOMPUTED_DIR", "")
 dir.create(OUTDIR, showWarnings = FALSE, recursive = TRUE)
 
 cat(R.version.string, "\n")
@@ -66,6 +72,11 @@ JOBS <- list(
   list(cls = "EX", obj = "merged.obj_EX_RCTD.rds", ref = "MPN_merged.neuron_vGluT2_QC.rds"),
   list(cls = "IN", obj = "merged.obj_IN_RCTD.rds", ref = "MPN_merged.neuron_vGat_QC.rds")
 )
+
+JOBS <- Filter(function(J) J$cls %in% CLASSES, JOBS)
+cat("classes to run: ", paste(vapply(JOBS, function(J) J$cls, ""), collapse = ", "),
+    if (nzchar(PRECOMP)) sprintf(" | reusing per-FOV results from %s", PRECOMP) else "",
+    "\n", sep = "")
 
 for (J in JOBS) {
   cls <- J$cls
@@ -116,6 +127,18 @@ for (J in JOBS) {
   res_list <- list()
   for (f in fovs) {
     cat("\n-- FOV", f, "--\n")
+
+    pre <- if (nzchar(PRECOMP))
+      file.path(PRECOMP, sprintf("rctd_results_%s_%s.csv.gz", cls, f)) else ""
+    if (nzchar(pre) && file.exists(pre)) {
+      df <- read.csv(gzfile(pre), stringsAsFactors = FALSE)
+      cat(sprintf("  reused precomputed result: %d cells\n", nrow(df)))
+      print(table(df$spot_class))
+      gzw(df, file.path(OUTDIR, sprintf("rctd_results_%s_%s.csv.gz", cls, f)))
+      res_list[[f]] <- df
+      next
+    }
+
     coords <- GetTissueCoordinates(obj[[f]], which = "centroids")
     rownames(coords) <- coords$cell
     coords$cell <- NULL
