@@ -1,0 +1,74 @@
+file,column,type,n_unique,n_missing,example,description
+GSE345405_MPN_crossspecies_vGluT2_deposit.rds,orig.ident,character,6,0,mouseF1 | mouseF2 | mouseM1,Sequencing/imaging run identifier
+GSE345405_MPN_crossspecies_vGluT2_deposit.rds,nCount_RNA,numeric,5145,0,6454 | 5285 | 5765,Total UMI count per nucleus (snRNA-seq)
+GSE345405_MPN_crossspecies_vGluT2_deposit.rds,nFeature_RNA,integer,2892,0,2722 | 2402 | 2362,Number of genes detected per nucleus
+GSE345405_MPN_crossspecies_vGluT2_deposit.rds,percent.mt,numeric,5178,0,0.154942671211652 | 0.132450331125828 | 0.0173460537727667,Percentage of mitochondrial transcripts (QC)
+GSE345405_MPN_crossspecies_vGluT2_deposit.rds,Species,factor,2,0,mouse | hamster,mouse or hamster (cross-species dataset only)
+GSE345405_MPN_crossspecies_vGluT2_deposit.rds,Sex,character,2,0,F | M,Sex of the donor animal
+GSE345405_MPN_crossspecies_vGluT2_deposit.rds,celltype_display,factor,44,0,e9 | e3 | e10,Published neuronal subtype label (e1-e44 / i1-i48)
+GSE345405_MPN_crossspecies_vGluT2_deposit.rds,NeuronType,factor,1,0,Ex,Excitatory (Ex) or inhibitory (In) assignment
+GSE345405_MPN_crossspecies_vGat_deposit.rds,orig.ident,character,6,0,mouseF1 | mouseF2 | mouseM1,Sequencing/imaging run identifier
+GSE345405_MPN_crossspecies_vGat_deposit.rds,nCount_RNA,numeric,8372,0,9962 | 40408 | 3630,Total UMI count per nucleus (snRNA-seq)
+GSE345405_MPN_crossspecies_vGat_deposit.rds,nFeature_RNA,integer,3787,0,3439 | 6950 | 1799,Number of genes detected per nucleus
+GSE345405_MPN_crossspecies_vGat_deposit.rds,percent.mt,numeric,12408,0,0.0501907247540655 | 0.546921401702633 | 1.37741046831956,Percentage of mitochondrial transcripts (QC)
+GSE345405_MPN_crossspecies_vGat_deposit.rds,Species,factor,2,0,mouse | hamster,mouse or hamster (cross-species dataset only)
+GSE345405_MPN_crossspecies_vGat_deposit.rds,Sex,character,2,0,F | M,Sex of the donor animal
+GSE345405_MPN_crossspecies_vGat_deposit.rds,celltype_display,factor,48,0,i23 | i10 | i2,Published neuronal subtype label (e1-e44 / i1-i48)
+GSE345405_MPN_crossspecies_vGat_deposit.rds,NeuronType,factor,1,0,In,Excitatory (Ex) or inhibitory (In) assignment
+GSE346081_sumwin_vGluT2_deposit.rds,orig.ident,character,5,0,summerM1 | winterM1 | winterM2,Sequencing/imaging run identifier
+GSE346081_sumwin_vGluT2_deposit.rds,nCount_RNA,numeric,8832,0,18764 | 8369 | 9878,Total UMI count per nucleus (snRNA-seq)
+GSE346081_sumwin_vGluT2_deposit.rds,nFeature_RNA,integer,3977,0,5997 | 3445 | 4440,Number of genes detected per nucleus
+GSE346081_sumwin_vGluT2_deposit.rds,percent.mt,numeric,5464,0,0 | 0.0101235067827495 | 0.00635485510930351,Percentage of mitochondrial transcripts (QC)
+GSE346081_sumwin_vGluT2_deposit.rds,nCount_SCT,numeric,4804,0,14551 | 12540 | 12409,Total count after SCTransform normalisation
+GSE346081_sumwin_vGluT2_deposit.rds,nFeature_SCT,integer,3248,0,5944 | 3505 | 4422,Number of genes after SCTransform normalisation
+GSE346081_sumwin_vGluT2_deposit.rds,Mode,character,2,0,summer | winter,summer (non-hibernating) or winter (hibernating)
+GSE346081_sumwin_vGluT2_deposit.rds,Sex,character,2,0,M | F,Sex of the donor animal
+GSE346081_sumwin_vGluT2_deposit.rds,seurat_clusters,factor,51,0,16 | 12 | 23,Published cluster identity used in the figures
+GSE346081_sumwin_vGluT2_deposit.rds,crossspecies_subtype_transferred,character,39,0,e2 | e8 | e6,"Cross-species subtype (Figs. 1-3 labels) transferred to the nucleus by Seurat label transfer, all nuclei of the cross-species dataset as reference (Figs. 5c, 6c)"
+GSE346081_sumwin_vGluT2_deposit.rds,crossspecies_transfer_score,numeric,10382,0,0.390211 | 0.606589 | 0.456134,Seurat prediction.score.max (0-1) of the transferred cross-species subtype
+GSE346081_sumwin_vGat_deposit.rds,orig.ident,character,5,0,summerM1 | winterM1 | winterM2,Sequencing/imaging run identifier
+GSE346081_sumwin_vGat_deposit.rds,nCount_RNA,numeric,14147,0,19235 | 10394 | 9737,Total UMI count per nucleus (snRNA-seq)
+GSE346081_sumwin_vGat_deposit.rds,nFeature_RNA,integer,5003,0,5651 | 4140 | 4009,Number of genes detected per nucleus
+GSE346081_sumwin_vGat_deposit.rds,percent.mt,numeric,9794,0,0.0103977125032493 | 0.00962093515489706 | 0.0102701037280477,Percentage of mitochondrial transcripts (QC)
+GSE346081_sumwin_vGat_deposit.rds,nCount_SCT,numeric,6162,0,12434 | 10835 | 10686,Total count after SCTransform normalisation
+GSE346081_sumwin_vGat_deposit.rds,nFeature_SCT,integer,3797,0,5304 | 4131 | 3998,Number of genes after SCTransform normalisation
+GSE346081_sumwin_vGat_deposit.rds,Mode,character,2,0,summer | winter,summer (non-hibernating) or winter (hibernating)
+GSE346081_sumwin_vGat_deposit.rds,Sex,character,2,0,M | F,Sex of the donor animal
+GSE346081_sumwin_vGat_deposit.rds,seurat_clusters,factor,53,0,2 | 12 | 18,Published cluster identity used in the figures
+GSE346081_sumwin_vGat_deposit.rds,crossspecies_subtype_transferred,character,45,0,i17 | i19 | i10,"Cross-species subtype (Figs. 1-3 labels) transferred to the nucleus by Seurat label transfer, all nuclei of the cross-species dataset as reference (Figs. 5c, 6c)"
+GSE346081_sumwin_vGat_deposit.rds,crossspecies_transfer_score,numeric,20551,0,0.735382 | 1 | 1,Seurat prediction.score.max (0-1) of the transferred cross-species subtype
+GSE345359_Xenium_EX_deposit.rds,orig.ident,character,4,0,Ctrl1 | Winter1 | Ctrl2,Sequencing/imaging run identifier
+GSE345359_Xenium_EX_deposit.rds,nCount_Xenium,numeric,760,0,155 | 269 | 128,Total transcript count per cell (Xenium)
+GSE345359_Xenium_EX_deposit.rds,nFeature_Xenium,integer,67,0,34 | 44 | 41,Number of panel genes detected per cell
+GSE345359_Xenium_EX_deposit.rds,nCount_BlankCodeword,numeric,8,0,0 | 1 | 2,Negative control: blank codeword counts
+GSE345359_Xenium_EX_deposit.rds,nCount_ControlCodeword,numeric,3,0,0 | 1 | 2,Negative control: control codeword counts
+GSE345359_Xenium_EX_deposit.rds,nCount_ControlProbe,numeric,6,0,0 | 1 | 2,Negative control: control probe counts
+GSE345359_Xenium_EX_deposit.rds,Condition,character,2,0,Ctrl | Winter,Ctrl (non-hibernating) or Winter (hibernating)
+GSE345359_Xenium_EX_deposit.rds,animal,character,9,9,Ctrl1 | Ctrl2 | Winter2,Donor animal identifier
+GSE345359_Xenium_EX_deposit.rds,seurat_clusters,factor,44,0,0 | 12 | 2,Published cluster identity used in the figures
+GSE345359_Xenium_EX_deposit.rds,predicted.celltype,factor,45,67906,e21 | NA | e14,Cross-species subtype assigned by RCTD (first_type; identical to the first_type column)
+GSE345359_Xenium_EX_deposit.rds,AVPe_MnPO_MPN,logical,2,0,FALSE | TRUE,TRUE if the cell lies in the AVPe/MnPO/MPN region
+GSE345359_Xenium_EX_deposit.rds,spot_class,character,5,67906,singlet | reject | NA,"RCTD call: singlet, doublet_certain, doublet_uncertain or reject"
+GSE345359_Xenium_EX_deposit.rds,first_type,character,45,67906,e21 | e14 | NA,RCTD best-fitting cross-species subtype
+GSE345359_Xenium_EX_deposit.rds,second_type,character,45,67906,e3 | e27 | NA,RCTD second cell type in the doublet fit
+GSE345359_Xenium_EX_deposit.rds,min_score,numeric,156445,67906,67.3243819232472 | 87.8675607310281 | NA,RCTD negative log-likelihood of the best fit
+GSE345359_Xenium_EX_deposit.rds,singlet_score,numeric,156445,67906,70.4820020768508 | 98.7608364913375 | NA,RCTD fit score under the singlet assumption
+GSE345359_Xenium_EX_deposit.rds,conv_all,logical,3,67906,TRUE | FALSE | NA,"RCTD convergence flag, all-type fit"
+GSE345359_Xenium_EX_deposit.rds,conv_doublet,logical,2,67906,TRUE | NA,"RCTD convergence flag, doublet fit"
+GSE345359_Xenium_IN_deposit.rds,orig.ident,character,4,0,Ctrl1 | Winter1 | Ctrl2,Sequencing/imaging run identifier
+GSE345359_Xenium_IN_deposit.rds,nCount_Xenium,numeric,1089,0,175 | 119 | 70,Total transcript count per cell (Xenium)
+GSE345359_Xenium_IN_deposit.rds,nFeature_Xenium,integer,67,0,30 | 34 | 24,Number of panel genes detected per cell
+GSE345359_Xenium_IN_deposit.rds,nCount_BlankCodeword,numeric,10,0,0 | 1 | 2,Negative control: blank codeword counts
+GSE345359_Xenium_IN_deposit.rds,nCount_ControlCodeword,numeric,3,0,0 | 1 | 2,Negative control: control codeword counts
+GSE345359_Xenium_IN_deposit.rds,nCount_ControlProbe,numeric,7,0,0 | 1 | 2,Negative control: control probe counts
+GSE345359_Xenium_IN_deposit.rds,Condition,character,2,0,Ctrl | Winter,Ctrl (non-hibernating) or Winter (hibernating)
+GSE345359_Xenium_IN_deposit.rds,animal,character,9,28,Ctrl1 | Ctrl2 | NA,Donor animal identifier
+GSE345359_Xenium_IN_deposit.rds,seurat_clusters,factor,57,0,12 | 13 | 38,Published cluster identity used in the figures
+GSE345359_Xenium_IN_deposit.rds,predicted.celltype,factor,49,168584,i46 | i2 | NA,Cross-species subtype assigned by RCTD (first_type; identical to the first_type column)
+GSE345359_Xenium_IN_deposit.rds,spot_class,character,5,168584,singlet | reject | NA,"RCTD call: singlet, doublet_certain, doublet_uncertain or reject"
+GSE345359_Xenium_IN_deposit.rds,first_type,character,49,168584,i46 | i2 | NA,RCTD best-fitting cross-species subtype
+GSE345359_Xenium_IN_deposit.rds,second_type,character,49,168584,i47 | i34 | NA,RCTD second cell type in the doublet fit
+GSE345359_Xenium_IN_deposit.rds,min_score,numeric,338639,168584,52.6806721661124 | 75.5760545205038 | NA,RCTD negative log-likelihood of the best fit
+GSE345359_Xenium_IN_deposit.rds,singlet_score,numeric,338639,168584,54.5333589119927 | 115.576054520504 | NA,RCTD fit score under the singlet assumption
+GSE345359_Xenium_IN_deposit.rds,conv_all,logical,3,168584,TRUE | NA | FALSE,"RCTD convergence flag, all-type fit"
+GSE345359_Xenium_IN_deposit.rds,conv_doublet,logical,2,168584,TRUE | NA,"RCTD convergence flag, doublet fit"
