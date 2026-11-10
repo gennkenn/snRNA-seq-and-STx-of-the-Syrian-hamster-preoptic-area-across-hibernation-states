@@ -434,9 +434,9 @@ ggplot(df_long, aes(x = Var2, y = Fraction, fill = Var1)) +
 
 
 # Fig8a
-#To add the “animal” column to the metadata, see 20260710_ROIextraction.Rmd.
+#To add the "animal" column to the metadata, see 20260710_ROIextraction.Rmd.
 plan('sequential')
-# Peudobulkにして発現変動遺伝子の検定
+# Pseudobulk per animal, then per-cluster comparison of selected genes
 pseudo_merged.obj_EX <- AggregateExpression(merged.obj_EX, assays = "SCT", return.seurat = T, group.by = c("Condition", "animal", "seurat_clusters"))
 pseudo_merged.obj_EX$celltype.condition <- paste(pseudo_merged.obj_EX$seurat_clusters, pseudo_merged.obj_EX$Condition, sep = "_")
 Idents(pseudo_merged.obj_EX) <- "celltype.condition"
@@ -446,7 +446,7 @@ library(dplyr)
 library(tidyr)
 
 ##############################
-# 対象クラスター
+# Target clusters
 ##############################
 
 target_clusters <- c(
@@ -455,7 +455,7 @@ target_clusters <- c(
 )
 
 ##############################
-# 対象遺伝子
+# Target genes
 ##############################
 
 target_genes <- c(
@@ -468,7 +468,7 @@ target_genes <- c(
 )
 
 ##############################
-# 発現データ取得
+# Expression data
 ##############################
 
 expr <- FetchData(
@@ -482,13 +482,14 @@ expr <- FetchData(
 )
 
 ##############################
-# 結果保存用
+# Results container
 ##############################
 
 results <- list()
 
 ##############################
-# ループ
+# Loop: two-sided Welch's t-test
+# (n = 4 animals per condition)
 ##############################
 
 for(cl in target_clusters){
@@ -505,85 +506,55 @@ for(cl in target_clusters){
         Expression = all_of(gene)
       )
     
-    ## Condition確認
+    ## both conditions must be present
     if(length(unique(dat$Condition)) != 2){
       next
     }
     
-    ## Wilcoxon
-    wt <- wilcox.test(
-      Expression ~ Condition,
-      data = dat,
-      exact = FALSE
+    ## Welch's t-test
+    tt <- tryCatch(
+      t.test(
+        Expression ~ Condition,
+        data = dat,
+        alternative = "two.sided",
+        var.equal = FALSE
+      ),
+      error = function(e) NULL
     )
     
-    ## 出力
+    ## output
     results[[length(results)+1]] <- data.frame(
       
       Cluster = cl,
       Gene = gene,
       
+      n_Ctrl   = sum(dat$Condition == "Ctrl"),
+      n_Winter = sum(dat$Condition == "Winter"),
+      
       Ctrl_mean =
-        mean(dat$Expression[
-          dat$Condition=="Ctrl"
-        ]),
+        mean(dat$Expression[dat$Condition=="Ctrl"]),
       
       Winter_mean =
-        mean(dat$Expression[
-          dat$Condition=="Winter"
-        ]),
+        mean(dat$Expression[dat$Condition=="Winter"]),
       
       Ctrl_SD =
-        sd(dat$Expression[
-          dat$Condition=="Ctrl"
-        ]),
+        sd(dat$Expression[dat$Condition=="Ctrl"]),
       
       Winter_SD =
-        sd(dat$Expression[
-          dat$Condition=="Winter"
-        ]),
+        sd(dat$Expression[dat$Condition=="Winter"]),
       
-      Ctrl1 =
-        dat$Expression[
-          dat$animal=="Ctrl1"
-        ],
+      Ctrl1   = dat$Expression[dat$animal=="Ctrl1"],
+      Ctrl2   = dat$Expression[dat$animal=="Ctrl2"],
+      Ctrl3   = dat$Expression[dat$animal=="Ctrl3"],
+      Ctrl4   = dat$Expression[dat$animal=="Ctrl4"],
+      Winter1 = dat$Expression[dat$animal=="Winter1"],
+      Winter2 = dat$Expression[dat$animal=="Winter2"],
+      Winter3 = dat$Expression[dat$animal=="Winter3"],
+      Winter4 = dat$Expression[dat$animal=="Winter4"],
       
-      Ctrl2 =
-        dat$Expression[
-          dat$animal=="Ctrl2"
-        ],
-      
-      Ctrl3 =
-        dat$Expression[
-          dat$animal=="Ctrl3"
-        ],
-      
-      Ctrl4 =
-        dat$Expression[
-          dat$animal=="Ctrl4"
-        ],
-      
-      Winter1 =
-        dat$Expression[
-          dat$animal=="Winter1"
-        ],
-      
-      Winter2 =
-        dat$Expression[
-          dat$animal=="Winter2"
-        ],
-      
-      Winter3 =
-        dat$Expression[
-          dat$animal=="Winter3"
-        ],
-      
-      Winter4 =
-        dat$Expression[
-          dat$animal=="Winter4"
-        ],
-      
-      p.value = wt$p.value
+      t_statistic = if(is.null(tt)) NA_real_ else unname(tt$statistic),
+      df          = if(is.null(tt)) NA_real_ else unname(tt$parameter),
+      p.value     = if(is.null(tt)) NA_real_ else tt$p.value
       
     )
     
@@ -592,244 +563,45 @@ for(cl in target_clusters){
 }
 
 ##############################
-# 結果結合
+# Combine
 ##############################
 
 result_df <- bind_rows(results)
 
-
 ##############################
-# Bonferroni補正
+# Benjamini-Hochberg correction
+# (across all cluster x gene comparisons)
 ##############################
 
 result_df <- result_df %>%
   mutate(
-    p.value.bonferroni = p.adjust(
+    n_tests  = sum(!is.na(p.value)),
+    p.adj.BH = p.adjust(
       p.value,
-      method = "bonferroni"
+      method = "BH"
+    ),
+    significance = case_when(
+      is.na(p.adj.BH)  ~ "NA",
+      p.adj.BH < 0.001 ~ "***",
+      p.adj.BH < 0.01  ~ "**",
+      p.adj.BH < 0.05  ~ "*",
+      TRUE             ~ "ns"
     )
-  )
+  ) %>%
+  arrange(Gene, Cluster)
 
 ##############################
-# 表示
+# Show
 ##############################
 
 result_df
 
 ##############################
-# 保存
+# Save
 ##############################
 
 write.csv(
   result_df,
-  "PseudoBulk_Wilcoxon_Results.csv",
+  "PseudoBulk_WelchT_BH_Results.csv",
   row.names = FALSE
 )
-
-
-
-
-# 描画用コード
-library(Seurat)
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(ggbeeswarm)
-
-##############################
-## 設定
-##############################
-
-target_clusters <- c(
-  3,4,5,6,20,21,23,25,
-  27,28,29,32,33,34,37,41
-)
-
-target_genes <- c(
-  "Adcyap1",
-  "Bdnf",
-  "Lepr",
-  "Ptger3",
-  "Opn5",
-  "Brs3"
-)
-
-##############################
-## データ取得
-##############################
-
-plot_df <- FetchData(
-  pseudo_merged.obj_EX,
-  vars = c(
-    target_genes,
-    "Condition",
-    "animal",
-    "seurat_clusters"
-  )
-)
-
-##############################
-## long形式へ
-##############################
-
-plot_df <- plot_df %>%
-  filter(seurat_clusters %in% target_clusters) %>%
-  pivot_longer(
-    cols = all_of(target_genes),
-    names_to = "Gene",
-    values_to = "Expression"
-  )
-
-##############################
-## factor順
-##############################
-
-plot_df$seurat_clusters <- factor(
-  plot_df$seurat_clusters,
-  levels = target_clusters
-)
-
-plot_df$Gene <- factor(
-  plot_df$Gene,
-  levels = target_genes
-)
-
-plot_df$Condition <- factor(
-  plot_df$Condition,
-  levels = c("Ctrl","Winter")
-)
-
-##############################
-## 平均・SEM
-##############################
-
-summary_df <- plot_df %>%
-  group_by(
-    Gene,
-    seurat_clusters,
-    Condition
-  ) %>%
-  summarise(
-    Mean = mean(Expression),
-    SEM = sd(Expression) / sqrt(n()),
-    .groups = "drop"
-  )
-
-##############################
-## Plot
-##############################
-
-p <- ggplot(
-  plot_df,
-  aes(
-    x = Condition,
-    y = Expression,
-    colour = Condition
-  )
-) +
-  
-  ## animalごとの点
-  geom_quasirandom(
-    width = 0.18,
-    size = 2.6,
-    alpha = 1
-  ) +
-  
-  ## SEM
-  geom_errorbar(
-    data = summary_df,
-    aes(
-      x = Condition,
-      ymin = Mean - SEM,
-      ymax = Mean + SEM
-    ),
-    inherit.aes = FALSE,
-    width = 0.12,
-    linewidth = 0.5
-  ) +
-  
-  ## Mean
-  geom_crossbar(
-    data = summary_df,
-    aes(
-      x = Condition,
-      y = Mean,
-      ymin = Mean,
-      ymax = Mean
-    ),
-    inherit.aes = FALSE,
-    width = 0.45,
-    linewidth = 0.6,
-    colour = "black"
-  ) +
-  
-  facet_grid(
-    Gene ~ seurat_clusters,
-    scales = "free_y"
-  ) +
-  
-  ## 必ず0スタート
-  scale_y_continuous(
-    limits = c(0, NA),
-    expand = expansion(mult = c(0, 0.05))
-  ) +
-  
-  scale_colour_manual(
-    values = c(
-      Ctrl = "#EF8A62",
-      Winter = "#67A9CF"
-    )
-  ) +
-  
-  labs(
-    x = NULL,
-    y = "SCT expression"
-  ) +
-  
-  theme_classic(base_size = 13) +
-  
-  theme(
-    
-    legend.position = "none",
-    
-    strip.background = element_blank(),
-    
-    strip.text.x = element_text(
-      face = "bold",
-      size = 10
-    ),
-    
-    strip.text.y = element_text(
-      face = "italic",
-      size = 10
-    ),
-    
-    panel.spacing.x = unit(
-      0.15,
-      "lines"
-    ),
-    
-    panel.spacing.y = unit(
-      0.35,
-      "lines"
-    ),
-    
-    axis.text.x = element_text(
-      angle = 45,
-      hjust = 1,
-      size = 8
-    ),
-    
-    axis.text.y = element_text(
-      size = 8
-    ),
-    
-    axis.title.y = element_text(
-      size = 11
-    ),
-    
-    axis.title.x = element_blank()
-    
-  )
-
-p
